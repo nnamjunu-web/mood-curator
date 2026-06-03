@@ -1,0 +1,36 @@
+/* 보라 알약 배지 */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-badge);
+  color: var(--color-badge-text);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+}
+
+.percent {
+  line-height: 1;
+}
+
+/* 막대 3개를 바닥 정렬해 이퀄라이저처럼 보이게 */
+.bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+}
+
+/* 막대 한 개 (색은 글자색을 그대로 사용) */
+.bar {
+  width: 3px;
+  background: currentColor;
+  border-radius: 1px;
+}
+
+/* 높낮이를 다르게 줘서 이퀄라이저 느낌 */
+.bar1 { height: 5px; }
+.bar2 { height: 11px; }
+.bar3 { height: 7px; }

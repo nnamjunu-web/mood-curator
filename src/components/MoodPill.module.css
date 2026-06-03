@@ -1,0 +1,45 @@
+/* 알약 모양 감정 버튼: 흰 배경 + 둥근 테두리 */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 15px;
+  transition: all 0.15s ease;
+}
+
+/* 마우스를 올리면 살짝 보라빛으로 */
+.pill:hover {
+  border-color: var(--color-accent);
+  color: var(--color-primary);
+}
+
+/* soft 변형: 연보라 배경 + 테두리 없음 */
+.soft {
+  background: var(--color-primary-soft);
+  border-color: transparent;
+  color: var(--color-primary);
+}
+
+/* selected: 선택된 감정 — 진한 보라로 채워 강조 */
+.selected {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+/* 선택된 상태에서는 호버해도 흰 글자가 유지되도록 */
+.selected:hover {
+  color: #fff;
+}
+
+/* 아이콘 정렬용 */
+.icon {
+  display: inline-flex;
+  align-items: center;
+  font-size: 16px;
+}

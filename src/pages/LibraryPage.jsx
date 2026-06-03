@@ -1,0 +1,156 @@
+import { useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { getFavorites, removeFavorite } from '../services/favorites'
+import ContentCard from '../components/ContentCard'
+import styles from './LibraryPage.module.css'
+
+/*
+  LibraryPage — '내 보관함' 화면 (경로: /library)
+  - localStorage에 저장한 즐겨찾기를 카드로 보여준다.
+  - 분류 필터 + 정렬(최신순/일치도순) + 상단 검색창(무드 태그 기준) + 삭제를 지원한다.
+*/
+
+// 분류 필터 — 라벨과 실제 item.type 값
+const FILTERS = [
+  { label: '전체', value: 'all' },
+  { label: '영화', value: 'movie' },
+  { label: '음악', value: 'music' },
+  { label: '도서', value: 'book' },
+]
+
+// 타입(영문) → 한국어 라벨 / 카테고리 아이콘 / 자리표시 그라데이션
+const TYPE_LABEL = { movie: '영화', music: '음악', book: '도서', food: '요리' }
+const TYPE_ICON = { movie: '🎬', music: '🎵', book: '📖', food: '🍳' }
+const TYPE_GRADIENT = {
+  movie: 'linear-gradient(160deg, #2f4538, #6f8f7a)',
+  music: 'linear-gradient(160deg, #2a1040, #b14de0)',
+  book: 'linear-gradient(160deg, #6b5a3a, #c9a87a)',
+  food: 'linear-gradient(160deg, #c98a3a, #f0c87a)',
+}
+
+function LibraryPage() {
+  // useNavigate(): navigate('/경로')로 페이지를 이동시키는 함수
+  const navigate = useNavigate()
+
+  // 상단 검색창이 URL에 써둔 q 값을 읽는다 (Header가 입력 → 여기서 필터)
+  const [searchParams] = useSearchParams()
+  const query = (searchParams.get('q') ?? '').trim().toLowerCase()
+
+  // 즐겨찾기 목록 — 처음 한 번 localStorage에서 읽어 초기값으로 둔다
+  const [favorites, setFavorites] = useState(() => getFavorites())
+
+  // 현재 선택된 필터와 정렬
+  const [filter, setFilter] = useState('all')
+  const [sort, setSort] = useState('recent') // 'recent'(최신순) | 'match'(일치도순)
+
+  // 휴지통 클릭 → 즐겨찾기에서 삭제 후 화면 갱신
+  function handleRemove(item) {
+    const updated = removeFavorite(item.id)
+    setFavorites(updated)
+  }
+
+  // 검색어가 항목과 맞는지 (무드 태그칩 우선, 제목/제작자도 보조로 확인)
+  function matchesQuery(item) {
+    if (!query) return true
+    const inTags = (item.tags ?? []).some((tag) => tag.toLowerCase().includes(query))
+    const inTitle = item.title?.toLowerCase().includes(query)
+    const inSubtitle = item.subtitle?.toLowerCase().includes(query)
+    return inTags || inTitle || inSubtitle
+  }
+
+  // 1) 분류 필터 → 2) 검색 필터 → 3) 정렬 순으로 화면에 보일 목록을 만든다
+  let visible = filter === 'all' ? favorites : favorites.filter((f) => f.type === filter)
+  visible = visible.filter(matchesQuery)
+  if (sort === 'match') {
+    // 일치도순: matchRate 큰 순. 값이 없으면 맨 뒤로(-1)
+    visible = [...visible].sort((a, b) => (b.matchRate ?? -1) - (a.matchRate ?? -1))
+  }
+  // 'recent'(최신순)는 저장된 순서(최근 저장이 앞)를 그대로 사용
+
+  return (
+    <div className={styles.page}>
+      {/* 제목 영역 */}
+      <h1 className={styles.title}>내 보관함</h1>
+      <p className={styles.subtitle}>당신의 감정이 담긴 안식처</p>
+
+      {/* 즐겨찾기가 하나도 없을 때 */}
+      {favorites.length === 0 ? (
+        <div className={styles.emptyState}>
+          <p className={styles.emptyText}>아직 저장한 항목이 없어요.<br />감정을 분석하고 마음에 드는 콘텐츠를 저장해 보세요.</p>
+          <button className={styles.emptyButton} onClick={() => navigate('/analyze')}>
+            감정 분석하러 가기
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* 필터 + 정렬 줄 */}
+          <div className={styles.toolbar}>
+            <div className={styles.filters}>
+              {FILTERS.map((item) => (
+                <button
+                  key={item.value}
+                  className={filter === item.value ? `${styles.filter} ${styles.filterActive}` : styles.filter}
+                  onClick={() => setFilter(item.value)}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+
+            <label className={styles.sort}>
+              정렬 기준:
+              {/* select: 펼치면 옵션을 고르는 드롭다운 */}
+              <select
+                className={styles.sortSelect}
+                value={sort}
+                onChange={(event) => setSort(event.target.value)}
+              >
+                <option value="recent">최신순</option>
+                <option value="match">일치도순</option>
+              </select>
+            </label>
+          </div>
+
+          {/* 카드 그리드 */}
+          <div className={styles.grid}>
+            {/* 필터/검색 결과가 비었을 때 */}
+            {visible.length === 0 && (
+              <p className={styles.filteredEmpty}>조건에 맞는 항목이 없어요.</p>
+            )}
+
+            {visible.map((item) => (
+              <ContentCard
+                key={item.id}
+                image={item.image}
+                gradient={TYPE_GRADIENT[item.type] ?? 'linear-gradient(160deg, #6b6fb0, #b7a9e0)'}
+                matchRate={item.matchRate}
+                categoryIcon={TYPE_ICON[item.type]}
+                category={TYPE_LABEL[item.type] ?? item.type}
+                title={item.title}
+                subtitle={item.subtitle}
+                tags={item.tags ?? []}
+                cornerIcon="trash"
+                onCornerClick={() => handleRemove(item)}
+              />
+            ))}
+
+            {/* 점선 '추가' 카드 → 홈으로 이동 */}
+            <button className={styles.addCard} onClick={() => navigate('/')}>
+              <span className={styles.plus}>+</span>
+              <span>더 많은 감정 찾기</span>
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* 하단 버튼 → 추천 홈으로 이동 */}
+      <div className={styles.bottom}>
+        <button className={styles.exploreButton} onClick={() => navigate('/')}>
+          더 많은 큐레이션 탐색하기
+        </button>
+      </div>
+    </div>
+  )
+}
+
+export default LibraryPage

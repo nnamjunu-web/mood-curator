@@ -1,0 +1,40 @@
+/* 푸터 전체: 살짝 진한 라벤더 배경 */
+.footer {
+  margin-top: 48px;
+  background: var(--color-surface-soft);
+}
+
+/* 내부 콘텐츠 정렬: 왼쪽(로고)·오른쪽(링크)으로 양 끝 배치 */
+.inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.copy {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+/* 오른쪽 링크들 */
+.links {
+  display: flex;
+  gap: 22px;
+}
+
+.links a {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}

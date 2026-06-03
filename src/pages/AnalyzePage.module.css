@@ -1,0 +1,168 @@
+/* 페이지 전체: 가운데 정렬 */
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 56px 24px 64px;
+  text-align: center;
+}
+
+.title {
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: -1px;
+  margin-bottom: 14px;
+}
+
+.subtitle {
+  font-size: 15px;
+  color: var(--color-text-muted);
+  margin-bottom: 36px;
+}
+
+/* 카메라 영역 바깥의 큰 라운드 카드 */
+.camera {
+  background: linear-gradient(180deg, #f0ecf7, #e9e4f3);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  margin-bottom: 28px;
+}
+
+/* 안쪽 정사각형 점선 프레임 */
+.frame {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  max-width: 520px;
+  margin: 0 auto;
+  border: 2px dashed rgba(139, 123, 199, 0.4);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #efeaf8;
+}
+
+/* 네 모서리 브래킷 (ㄱ자 모양) */
+.bracket {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border: 0 solid rgba(123, 107, 184, 0.6);
+}
+.tl { top: 14px; left: 14px; border-top-width: 3px; border-left-width: 3px; border-top-left-radius: 6px; }
+.tr { top: 14px; right: 14px; border-top-width: 3px; border-right-width: 3px; border-top-right-radius: 6px; }
+.bl { bottom: 14px; left: 14px; border-bottom-width: 3px; border-left-width: 3px; border-bottom-left-radius: 6px; }
+.br { bottom: 14px; right: 14px; border-bottom-width: 3px; border-right-width: 3px; border-bottom-right-radius: 6px; }
+
+/* 웹캠 영상: 프레임을 꽉 채우고 거울처럼 좌우 반전 */
+.video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+/* "● 카메라를 연결하십시오" 상태 알약 (프레임 하단 중앙) */
+.statusPill {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-soft);
+  white-space: nowrap;
+}
+
+/* 초록색 상태 점 */
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4caf7d;
+}
+
+/* 권한 거부 등 오류 안내 (프레임 가운데) */
+.errorBox {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.errorText {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: 20px 22px;
+  max-width: 360px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text);
+  box-shadow: var(--shadow-soft);
+}
+
+/* 버튼 묶음 */
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+/* 진한 보라 주요 버튼 */
+.primaryButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 32px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* 연보라 보조 버튼 */
+.secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 32px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* 비활성 버튼 */
+.primaryButton:disabled,
+.secondaryButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 얼굴 미인식 등 알림 문구 */
+.notice {
+  font-size: 14px;
+  color: var(--color-danger);
+  margin-bottom: 20px;
+}
+
+/* 카메라 없이 감정을 직접 고르는 빠른 선택 태그 묶음 */
+.quickMoods {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}

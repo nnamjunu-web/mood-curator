@@ -1,0 +1,11 @@
+/* 회색 알약 태그칩 */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  color: var(--color-tag-text);
+  background: var(--color-tag-bg);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}

@@ -1,0 +1,275 @@
+/* 페이지 전체 가운데 정렬 + 최대 너비 제한 */
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ===== 히어로 ===== */
+.hero {
+  text-align: center;
+  padding: 64px 0 48px;
+  /* 가운데에서 퍼지는 은은한 보라 빛 배경 */
+  background: radial-gradient(ellipse at center top, rgba(139, 123, 199, 0.18), transparent 60%);
+}
+
+.heroTitle {
+  font-size: 44px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -1px;
+  margin-bottom: 32px;
+}
+
+/* 감정 알약 묶음: 가운데 정렬 + 줄바꿈 허용 */
+.moods {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 36px;
+}
+
+.heroButtons {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+/* '추천 받기' — 감정 선택 전 기본(비활성) 모양: 연한 글자 */
+.ghostButton {
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 15px;
+  padding: 10px 24px;
+  border-radius: var(--radius-pill);
+}
+
+/* 비활성일 때 커서 표시 */
+.ghostButton:disabled {
+  cursor: not-allowed;
+}
+
+/* 감정을 고르면 활성화 — 연보라 알약으로 또렷하게 */
+.ghostButtonActive {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* '내 감정 추천' — 연보라 알약 버튼 */
+.softButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 auto;
+  width: fit-content;
+  padding: 12px 26px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+/* Link는 기본이 inline이라 가운데 정렬을 위해 block 처리 */
+.hero .softButton {
+  display: flex;
+}
+
+/* ===== 콘텐츠 영역 ===== */
+/* 왼쪽(목록) + 오른쪽(사이드바) 2단 구성 */
+.content {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 28px;
+  padding: 24px 0 48px;
+}
+
+/* 추천 모드 섹션 제목 ('행복' 추천) */
+.recTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 16px;
+}
+
+/* 탭 줄 */
+.tabs {
+  display: flex;
+  gap: 24px;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 22px;
+}
+
+.tab {
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 16px;
+  padding: 0 0 12px;
+}
+
+/* 선택된 탭: 진한 글자 + 밑줄 */
+.tabActive {
+  color: var(--color-primary);
+  font-weight: 700;
+  border-bottom: 2px solid var(--color-primary);
+}
+
+/* 카드 4개를 한 줄에 배치 (화면이 좁으면 자동 줄바꿈) */
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+/* 추천 받기 전 '감정 선택 안내' 빈 상태 */
+.empty {
+  text-align: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: 56px 24px;
+}
+
+.emptyIcons {
+  font-size: 40px;
+  letter-spacing: 6px;
+  margin-bottom: 18px;
+}
+
+.emptyTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 10px;
+}
+
+.emptyText {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--color-text-muted);
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+/* 카테고리 일부 실패/빈 결과 안내 문구 */
+.areaMessage {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  padding: 24px 0;
+}
+
+/* 추천 전체 실패 시 영역 에러 박스 */
+.areaError {
+  text-align: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+}
+
+.areaErrorText {
+  font-size: 15px;
+  color: var(--color-text);
+  margin-bottom: 18px;
+}
+
+.retryButton {
+  padding: 12px 28px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ===== 사이드바 ===== */
+.sidebar {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  height: fit-content;
+}
+
+.sidebarHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--color-primary);
+  margin-bottom: 16px;
+}
+
+.sidebarHead h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* 즐겨찾기가 없을 때 사이드바 안내 문구 */
+.savedEmpty {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  padding: 8px 0 4px;
+}
+
+.savedList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.savedItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 저장 항목의 작은 썸네일 */
+.savedThumb {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.savedType {
+  display: block;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.savedTitle {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.sidebarButton {
+  width: 100%;
+  margin-top: 22px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 14px;
+}
+
+/* 화면이 좁아지면 사이드바를 아래로 내려 1단으로 */
+@media (max-width: 900px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
+  .cardGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

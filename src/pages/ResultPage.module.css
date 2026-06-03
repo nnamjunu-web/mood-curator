@@ -1,0 +1,151 @@
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+}
+
+/* ===== 상단 감정 요약 ===== */
+.summary {
+  text-align: center;
+  background: radial-gradient(ellipse at center top, rgba(139, 123, 199, 0.16), transparent 55%);
+  padding-bottom: 24px;
+  margin-bottom: 16px;
+}
+
+/* 감정 이모지를 담는 원 */
+.circle {
+  width: 160px;
+  height: 160px;
+  margin: 0 auto 28px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, #cdbfe8, #b6a6dd);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emoji {
+  font-size: 72px;
+  line-height: 1;
+}
+
+.headline {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.5px;
+  max-width: 760px;
+  margin: 0 auto 14px;
+}
+
+.highlight {
+  color: var(--color-primary);
+}
+
+/* 표정/사진 분석 신뢰도 (있을 때만) */
+.confidence {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 4px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.desc {
+  font-size: 15px;
+  color: var(--color-text-muted);
+}
+
+/* ===== 카테고리 섹션 ===== */
+.section {
+  margin-top: 40px;
+}
+
+.sectionTitle {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+/* 한 줄에 4개 카드 */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* 결과가 없을 때 안내 */
+.empty {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  padding: 12px 0;
+}
+
+/* 해당 카테고리만 실패했을 때 보여줄 작은 안내 (섹션 자리 유지) */
+.sectionError {
+  font-size: 14px;
+  color: var(--color-danger);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+}
+
+/* ===== 에러 박스 ===== */
+.errorBox {
+  max-width: 520px;
+  margin: 40px auto;
+  text-align: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: var(--shadow-soft);
+}
+
+.errorText {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-text);
+  margin-bottom: 20px;
+}
+
+.retryButton {
+  padding: 12px 28px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ===== 하단 버튼 ===== */
+.footerActions {
+  display: flex;
+  justify-content: center;
+  margin-top: 48px;
+}
+
+.outlineButton {
+  padding: 15px 32px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-primary);
+  background: transparent;
+  color: var(--color-primary);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* 좁은 화면 대응 */
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .headline {
+    font-size: 26px;
+  }
+}
