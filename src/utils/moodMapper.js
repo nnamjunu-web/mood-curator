@@ -4,11 +4,6 @@
   - 변환 규칙을 이 한 파일에 모아두면, 표현을 바꿀 때 여기만 고치면 된다.
 */
 
-// face-api가 사용하는 7가지 감정 영문 코드 목록
-export const EMOTIONS = [
-  'happy', 'sad', 'angry', 'surprised', 'fearful', 'disgusted', 'neutral',
-]
-
 // 영문 감정 → 한국어 레이블
 const LABEL_MAP = {
   happy: '행복',

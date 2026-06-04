@@ -43,23 +43,3 @@ export function getRecommendationKeys(emotion) {
   // 매핑표에 있으면 그 값을, 없으면 FALLBACK을 돌려준다
   return EMOTION_MAP[emotion] ?? FALLBACK
 }
-
-/*
-  아래 3개는 "한 가지 기준만" 필요할 때 쓰는 편의 함수들.
-  (예: 영화 장르 ID만 필요하면 getMovieGenreId(emotion) 호출)
-*/
-
-// 감정 → TMDB 영화 장르 ID
-export function getMovieGenreId(emotion) {
-  return getRecommendationKeys(emotion).movieGenreId
-}
-
-// 감정 → Last.fm 음악 태그
-export function getMusicTag(emotion) {
-  return getRecommendationKeys(emotion).musicTag
-}
-
-// 감정 → Google Books 도서 주제
-export function getBookSubject(emotion) {
-  return getRecommendationKeys(emotion).bookSubject
-}

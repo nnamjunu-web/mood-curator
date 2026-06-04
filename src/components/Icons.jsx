@@ -64,15 +64,6 @@ export function SearchIcon(props) {
   )
 }
 
-// 재생(플레이) 아이콘
-export function PlayIcon(props) {
-  return (
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" {...props}>
-      <path d="M8 5v14l11-7z" />
-    </svg>
-  )
-}
-
 // 위로 향한 화살표(업로드) 아이콘
 export function UploadIcon(props) {
   return (
@@ -93,26 +84,6 @@ export function ScanFaceIcon(props) {
       strokeLinejoin="round" {...props}>
       <path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" />
       <path d="M9 10h.01M15 10h.01M9 14.5c.8.7 1.9 1 3 1s2.2-.3 3-1" />
-    </svg>
-  )
-}
-
-// 오른쪽 화살표 아이콘 (전체보기 등)
-export function ArrowRightIcon(props) {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
-      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"
-      strokeLinejoin="round" {...props}>
-      <path d="M5 12h14m-6-6l6 6-6 6" />
-    </svg>
-  )
-}
-
-// 반짝임(AI/추천 강조) 아이콘
-export function SparkleIcon(props) {
-  return (
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" {...props}>
-      <path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8z" />
     </svg>
   )
 }
