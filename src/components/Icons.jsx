@@ -5,18 +5,6 @@
     (...props: 호출하는 쪽에서 className, width 등을 넘기면 그대로 적용됨)
 */
 
-// 종 모양 알림 아이콘
-export function BellIcon(props) {
-  return (
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none"
-      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"
-      strokeLinejoin="round" {...props}>
-      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-      <path d="M13.7 21a2 2 0 0 1-3.4 0" />
-    </svg>
-  )
-}
-
 // 북마크(저장) 아이콘 — filled를 true로 주면 채워진 모양
 export function BookmarkIcon({ filled = false, ...props }) {
   return (
@@ -48,18 +36,6 @@ export function TrashIcon(props) {
       stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"
       strokeLinejoin="round" {...props}>
       <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
-    </svg>
-  )
-}
-
-// 검색 돋보기 아이콘
-export function SearchIcon(props) {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
-      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"
-      strokeLinejoin="round" {...props}>
-      <circle cx="11" cy="11" r="7" />
-      <path d="M21 21l-4.3-4.3" />
     </svg>
   )
 }

@@ -33,13 +33,12 @@ const REC_TABS = ['영화', '음악', '도서']
 const TAB_TO_KEY = { 영화: 'movies', 음악: 'music', 도서: 'books' }
 
 // 타입(영문) → 라벨 / 카테고리 아이콘 / 자리표시 그라데이션
-const TYPE_LABEL = { movie: '영화', music: '음악', book: '도서', food: '요리' }
-const TYPE_ICON = { movie: '🎬', music: '🎵', book: '📖', food: '🍳' }
+const TYPE_LABEL = { movie: '영화', music: '음악', book: '도서' }
+const TYPE_ICON = { movie: '🎬', music: '🎵', book: '📖' }
 const TYPE_GRADIENT = {
   movie: 'linear-gradient(135deg, #6f8f7a, #cfe0d6)',
   music: 'linear-gradient(135deg, #2a3550, #5a6a8a)',
   book: 'linear-gradient(135deg, #6b5a3a, #c9a87a)',
-  food: 'linear-gradient(135deg, #c98a3a, #f0c87a)',
 }
 
 function HomePage() {

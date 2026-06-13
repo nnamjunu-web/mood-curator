@@ -17,10 +17,9 @@
   margin-top: 8px;
 }
 
-/* 필터 + 정렬 줄 (양 끝 배치) */
+/* 분류 필터 줄 */
 .toolbar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   margin: 28px 0 24px;
   flex-wrap: wrap;
@@ -46,26 +45,6 @@
   background: var(--color-primary);
   border-color: var(--color-primary);
   color: #fff;
-}
-
-.sort {
-  font-size: 14px;
-  color: var(--color-text-muted);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* 정렬 드롭다운 */
-.sortSelect {
-  padding: 8px 14px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-text);
-  font-size: 14px;
-  font-family: inherit;
-  cursor: pointer;
 }
 
 /* 카드 그리드: 한 줄에 4개 */

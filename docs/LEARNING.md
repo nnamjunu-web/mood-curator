@@ -77,7 +77,7 @@ src/
 | [src/services/auth.js](../src/services/auth.js) | **Web Crypto 해시(SHA-256)**, 사용자/세션 저장 |
 | [src/services/faceApi.js](../src/services/faceApi.js) | 외부 라이브러리 감싸기, 표정→점수 |
 
-> 참고: [openLibrary.js](../src/services/openLibrary.js)(도서→카카오)와 [lastfm.js](../src/services/lastfm.js)(음악→iTunes 한국 스토어)는 소스가 바뀌며 **미사용**이 되었지만, 각각 '키 없는 REST 호출' / '태그+키 쿼리 호출' 예시로 남겨두었습니다.
+> 참고: 음악은 Last.fm → **iTunes 한국 스토어 검색**, 도서는 Open Library → **카카오**로 옮겼습니다. 더 이상 쓰지 않는 `lastfm.js`·`openLibrary.js`는 정리(삭제)했습니다.
 
 ### ③-2 context — 전역 로그인 상태
 | 파일 | 여기서 배우는 개념 |
@@ -178,7 +178,7 @@ npm run dev      # 개발 서버 실행 → 터미널에 뜨는 주소를 브라
 
 브라우저에서 **F12(개발자 도구)** 를 열고:
 
-1. **Network 탭**: 감정을 골라 "추천 받기"를 누르면 `themoviedb.org`, `audioscrobbler.com`(Last.fm), `openlibrary.org` 로 요청이 나가는 것을 볼 수 있어요. 각 요청을 클릭하면 실제 응답(JSON)도 보입니다.
+1. **Network 탭**: 감정을 골라 "추천 받기"를 누르면 `themoviedb.org`(영화), `itunes.apple.com`(음악), `dapi.kakao.com`(도서) 로 요청이 나가는 것을 볼 수 있어요. 각 요청을 클릭하면 실제 응답(JSON)도 보입니다.
 2. **Application 탭 → Local Storage**: 하트를 누르면 `moodcurator:favorites` 값이 바뀌고, 추천을 받으면 `recent_movie`/`recent_music`/`recent_book` 이 갱신되는 걸 관찰하세요.
 3. **console.log 찍어보기**: 예를 들어 `services/recommendations.js`의 `getRecommendations` 안에서 `console.log(movies, music, books)` 를 찍어 데이터가 어떻게 생겼는지 직접 확인해 보세요.
 

@@ -20,10 +20,10 @@
 ```bash
 npm install
 cp .env.example .env   # Windows PowerShell: Copy-Item .env.example .env
-# .env 에 TMDB / Last.fm / 카카오 키 입력
+# .env 에 TMDB / 카카오 키 입력 (음악=iTunes, 도서=카카오 / iTunes는 키 불필요)
 npm run dev
 ```
-- API 키 발급: [TMDB](https://www.themoviedb.org/settings/api) · [Last.fm](https://www.last.fm/api/account/create) · [카카오(REST API 키)](https://developers.kakao.com)
+- API 키 발급: [TMDB](https://www.themoviedb.org/settings/api) · [카카오(REST API 키)](https://developers.kakao.com)
 - 빌드: `npm run build` / 린트: `npm run lint`
 
 ## 폴더 구조 (요약)

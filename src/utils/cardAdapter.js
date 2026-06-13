@@ -1,7 +1,6 @@
 /*
   cardAdapter.js — 서로 다른 API 응답을 "카드 한 장"이 쓰는 공통 형태로 변환
   - TMDB(영화) / iTunes 한국 스토어(음악) / 카카오(도서)는 각자 응답 구조가 완전히 다르다.
-    (Last.fm용 normalizeTracks도 남아 있으나 현재 음악은 iTunes로 받는다)
     그대로 쓰면 카드 컴포넌트가 3가지 구조를 모두 알아야 해서 복잡해진다.
   - 그래서 여기서 아래 "공통 카드 형태" 하나로 통일한다:
       {
@@ -44,36 +43,11 @@ export function normalizeMovies(movies) {
 }
 
 /*
-  normalizeTracks — Last.fm 트랙 배열을 공통 카드 배열로 변환
-    입력: tracks (Last.fm 응답의 tracks.track 배열)
-    반환: 공통 카드 배열
-*/
-export function normalizeTracks(tracks) {
-  return tracks.map((track) => {
-    // 아티스트 이름 위치: track.artist.name (없을 수 있어 ?. 로 안전 접근)
-    const artist = track.artist?.name ?? ''
-    return {
-      // 음악은 숫자 id가 없어서 "아티스트-곡명"으로 고유 id를 만든다(공백은 -로)
-      id: `music-${artist}-${track.name}`.replace(/\s+/g, '-'),
-      type: 'music',
-      title: track.name,
-      subtitle: artist,
-      description: '',
-      image: pickLastfmImage(track.image),
-      // previewUrl: 30초 미리듣기 URL. 여기선 일단 null로 두고,
-      //   나중에 recommendations의 fillMusicArtwork가 iTunes에서 받아 채운다.
-      previewUrl: null,
-      link: track.url ?? null,
-    }
-  })
-}
-
-/*
   normalizeItunesTracks — iTunes(한국 스토어) 검색 결과를 공통 카드 배열로 변환
     입력: results (iTunes 응답의 results 배열,
                    각 원소: { trackId, trackName, artistName, artworkUrl100, previewUrl, trackViewUrl })
     반환: 공통 카드 배열
-  - 한 번의 검색으로 표지·미리듣기·링크가 다 들어오므로, 별도 보강(fillMusicArtwork) 없이 바로 카드가 된다.
+  - iTunes 검색 한 번에 표지·미리듣기·링크가 다 들어오므로, 추가 보조 조회 없이 바로 카드가 된다.
 */
 export function normalizeItunesTracks(results) {
   return results.map((song) => ({
@@ -92,28 +66,6 @@ export function normalizeItunesTracks(results) {
     // 애플 뮤직 상세 페이지 링크
     link: song.trackViewUrl ?? null,
   }))
-}
-
-// Last.fm이 "이미지 없음"일 때 돌려주는 회색 별 placeholder의 식별자.
-// 이 해시가 들어간 URL은 빈 이미지이므로 표지로 쓰지 않는다.
-const LASTFM_PLACEHOLDER = '2a96cbd8b46e442fc41c2b86b821562f'
-
-/*
-  pickLastfmImage — Last.fm의 이미지 배열에서 가장 큰(마지막) 유효 이미지를 고른다.
-    입력: images — [{ '#text': '주소', size: 'small'|... }, ...] 형태 배열
-    반환: 이미지 URL 문자열 또는 null
-  - 빈 별 placeholder는 걸러서 null을 돌려준다(→ 표지를 다른 데서 보강하거나 폴백).
-*/
-function pickLastfmImage(images) {
-  // 흐름 분기: 배열이 아니면 이미지 없음 처리
-  if (!Array.isArray(images)) return null
-  // 주소가 있고, placeholder가 아닌 것만 추리기
-  const withUrl = images.filter(
-    (img) => img['#text'] && !img['#text'].includes(LASTFM_PLACEHOLDER)
-  )
-  if (withUrl.length === 0) return null
-  // Last.fm은 작은→큰 순서라 마지막 것이 가장 큰 이미지
-  return withUrl[withUrl.length - 1]['#text']
 }
 
 /*
@@ -141,34 +93,6 @@ export function normalizeKakaoBooks(documents) {
       image: book.thumbnail || null,
       // 상세 페이지(다음 책 페이지) 링크
       link: book.url ?? null,
-    }
-  })
-}
-
-/*
-  normalizeBooks — Open Library 검색 결과(docs)를 공통 카드 배열로 변환
-    입력: books (Open Library 응답의 docs 배열, 각 원소: { key, title, author_name, cover_i })
-    반환: 공통 카드 배열
-  ※ 추천/인기 도서는 카카오(normalizeKakaoBooks)로 옮겼지만, 혹시 모를 재사용을 위해 남겨둔다.
-*/
-export function normalizeBooks(books) {
-  return books.map((doc) => {
-    // cover_i(표지 ID)가 있으면 표지 이미지 URL을 만든다 (M=중간 크기)
-    const image = doc.cover_i
-      ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`
-      : null
-
-    return {
-      // doc.key 예: '/works/OL123W' — 그 자체로 고유하다
-      id: `book-${doc.key}`,
-      type: 'book',
-      title: doc.title ?? '제목 없음',
-      // author_name은 배열이라 쉼표로 이어 붙인다
-      subtitle: doc.author_name ? doc.author_name.join(', ') : '',
-      description: '',
-      image,
-      // 상세 페이지 링크 (openlibrary.org + key)
-      link: doc.key ? `https://openlibrary.org${doc.key}` : null,
     }
   })
 }

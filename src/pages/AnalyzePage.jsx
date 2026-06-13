@@ -7,11 +7,13 @@ import styles from './AnalyzePage.module.css'
 
 /*
   AnalyzePage — 얼굴 표정으로 감정을 분석하는 화면 (경로: /analyze)
-  - 동작
-    1) '내 표정 분석하기' → 웹캠을 켜고 face-api로 표정 분석 → 결과 페이지로 이동
-    2) '사진 업로드' → 업로드한 이미지를 같은 로직으로 분석 → 결과 페이지로 이동
-    3) 하단 무드 태그 → 카메라 없이 그 감정으로 바로 결과 페이지로 이동
-    4) 카메라 권한 거부 시 안내 메시지 표시
+  - 동작 (2단계: 미리보기 → 분석)
+    1) 페이지에 들어오면 카메라가 자동으로 켜져 라이브 미리보기를 보여준다.
+    2) '분석하기'를 누르면 그 순간의 표정을 face-api로 분석 → 결과 페이지로 이동.
+       (얼굴을 못 찾으면 안내만 띄우고 미리보기는 유지 → 바로 재시도 가능)
+    3) '사진 업로드' → 업로드한 이미지를 같은 로직으로 분석 → 결과 페이지로 이동.
+    4) 하단 무드 태그 → 카메라 없이 그 감정으로 바로 결과 페이지로 이동.
+    5) 카메라 권한 거부 시 안내 + '다시 시도' 버튼 표시.
 */
 
 // 카메라 없이 감정을 직접 고르는 빠른 선택 태그 (라벨 + 시스템 코드)
@@ -62,6 +64,7 @@ function AnalyzePage() {
   const videoRef = useRef(null)
   const streamRef = useRef(null)
   const fileInputRef = useRef(null)
+  const startingRef = useRef(false) // 카메라를 켜는 중인지 (중복 요청 방지용 깃발)
 
   const [modelsReady, setModelsReady] = useState(false) // 모델 로딩 완료 여부
   const [cameraOn, setCameraOn] = useState(false)       // 카메라 켜짐 여부
@@ -69,11 +72,15 @@ function AnalyzePage() {
   const [analyzing, setAnalyzing] = useState(false)     // 분석 진행 중 여부
   const [notice, setNotice] = useState(null)            // 얼굴 미인식 등 알림
 
-  // 화면이 처음 뜰 때 모델만 미리 불러온다 (카메라는 버튼을 눌러야 켜짐)
+  // 화면이 처음 뜰 때: 모델을 미리 불러오고, 카메라를 자동으로 켜 라이브 미리보기를 시작한다.
+  // (분석은 '분석하기'를 눌러야 일어난다. '다시 분석하기'로 재진입해도 이 effect가 다시 돌아 미리보기가 보인다.)
   useEffect(() => {
     loadFaceModels()
       .then(() => setModelsReady(true))
       .catch((error) => console.error(error))
+
+    // 진입 즉시 카메라 켜기 → 미리보기
+    startCamera()
 
     // 페이지를 떠날 때 카메라 정리
     return () => stopCamera()
@@ -84,6 +91,13 @@ function AnalyzePage() {
       반환: Promise<boolean> — 성공하면 true, 실패(거부 등)하면 false
   */
   async function startCamera() {
+    // 이미 켜져 있거나(스트림 보유) 켜는 중이면 다시 요청하지 않는다 — 중복 권한 요청 방지
+    // (특히 개발 모드 StrictMode에서 effect가 두 번 실행돼도 카메라를 한 번만 켜도록)
+    if (streamRef.current || startingRef.current) {
+      if (streamRef.current) setCameraOn(true)
+      return true
+    }
+    startingRef.current = true
     try {
       // navigator.mediaDevices.getUserMedia({ video: true })
       //   입력: 장치 옵션(비디오만) / 반환: Promise<MediaStream>
@@ -105,6 +119,9 @@ function AnalyzePage() {
       }
       setCameraOn(false)
       return false
+    } finally {
+      // 성공/실패와 무관하게 '켜는 중' 깃발을 내린다
+      startingRef.current = false
     }
   }
 
@@ -124,21 +141,14 @@ function AnalyzePage() {
   }
 
   /*
-    handleCameraAnalyze — '내 표정 분석하기': 카메라를 켜고 표정을 분석한다.
+    handleAnalyze — '분석하기': 지금 미리보기 중인 화면에서 표정을 분석한다.
+    - 카메라는 진입 시 이미 켜져 있으므로 여기서는 '분석'만 담당한다(켜기/이동과 분리).
   */
-  async function handleCameraAnalyze() {
-    if (!modelsReady) return
+  async function handleAnalyze() {
+    // 모델·카메라가 준비됐고 분석 중이 아닐 때만 진행
+    if (!modelsReady || !cameraOn || analyzing) return
     setNotice(null)
     setAnalyzing(true)
-
-    // 카메라가 꺼져 있으면 먼저 켠다 (권한 거부 시 중단)
-    if (!cameraOn) {
-      const ok = await startCamera()
-      if (!ok) {
-        setAnalyzing(false)
-        return
-      }
-    }
 
     const video = videoRef.current
     await waitForVideoReady(video)              // 영상이 준비될 때까지 대기
@@ -149,7 +159,7 @@ function AnalyzePage() {
     if (!expressions) {
       setNotice('얼굴을 인식하지 못했어요. 화면 중앙에 얼굴을 맞추고 다시 시도해 주세요.')
       setAnalyzing(false)
-      return
+      return // 카메라는 끄지 않는다 → 미리보기 유지된 채 바로 다시 시도 가능
     }
 
     // 가장 점수 높은 감정 + 신뢰도로 결과 페이지 이동
@@ -218,18 +228,23 @@ function AnalyzePage() {
             style={{ display: cameraOn ? 'block' : 'none' }}
           />
 
-          {/* 카메라 꺼짐 + 오류 없음 → 상태 알약 */}
+          {/* 카메라 꺼짐 + 오류 없음 → 상태 알약 (자동 켜기라 대개 잠깐만 보인다) */}
           {!cameraOn && !cameraError && (
             <span className={styles.statusPill}>
               <span className={styles.dot} />
-              {analyzing ? '분석 중…' : modelsReady ? '카메라를 연결하십시오' : '모델을 불러오는 중…'}
+              {analyzing ? '분석 중…' : modelsReady ? '카메라를 켜는 중…' : '모델을 불러오는 중…'}
             </span>
           )}
 
-          {/* 권한 거부 등 오류 → 안내 박스 */}
+          {/* 권한 거부 등 오류 → 안내 박스 + 다시 시도 */}
           {cameraError && (
             <div className={styles.errorBox}>
-              <p className={styles.errorText}>⚠️ {cameraError}</p>
+              <div className={styles.errorText}>
+                <p>⚠️ {cameraError}</p>
+                <button className={styles.retryButton} onClick={startCamera}>
+                  카메라 다시 시도
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -239,10 +254,10 @@ function AnalyzePage() {
       <div className={styles.actions}>
         <button
           className={styles.primaryButton}
-          onClick={handleCameraAnalyze}
-          disabled={!modelsReady || analyzing}
+          onClick={handleAnalyze}
+          disabled={!modelsReady || !cameraOn || analyzing}
         >
-          <ScanFaceIcon /> {analyzing ? '분석 중…' : '내 표정 분석하기'}
+          <ScanFaceIcon /> {analyzing ? '분석 중…' : '분석하기'}
         </button>
         <button
           className={styles.secondaryButton}

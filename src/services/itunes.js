@@ -25,51 +25,11 @@ export async function searchKoreanTracks(keyword, limit = 40) {
 
   // encodeURIComponent: 한글/공백이 URL에서 깨지지 않게 변환
   const term = encodeURIComponent(keyword)
+  // 쿼리 파라미터 의미: term(검색어) · entity=song(노래만) · country=KR(한국 스토어) · limit(개수)
   const url = `${BASE_URL}?term=${term}&entity=song&country=KR&limit=${limit}`
 
   const data = await fetchJson(url, '음악 추천을 불러오지 못했습니다.')
 
   // 검색 결과는 data.results 배열. 비어 있을 때를 대비해 ?? [] 로 보호.
   return data.results ?? []
-}
-
-/*
-  fetchTrackMedia — "아티스트 + 곡명"으로 앨범 표지와 30초 미리듣기 URL을 함께 찾는다.
-    입력: artist(아티스트명), track(곡명)
-    반환: Promise<{ artwork: string|null, previewUrl: string|null }>
-          - artwork: 고해상도 표지 URL (없으면 null)
-          - previewUrl: 30초 미리듣기 오디오(.m4a) URL (없으면 null)
-
-  - artworkUrl100(100x100)을 받아 '512x512'로 바꿔 더 큰 이미지를 쓴다.
-  - 실패해도 추천 흐름이 멈추면 안 되므로, 오류는 삼키고 둘 다 null을 돌려준다.
-
-  ⚠️ [현재 미사용] 음악 소스를 'searchKoreanTracks(한국 스토어 검색)'으로 바꾸면서 표지·미리듣기가
-     이미 한 번에 들어와 보강이 필요 없어졌다. Last.fm처럼 "곡으로 보조 조회"하는 패턴 예시로 남겨둔다.
-*/
-export async function fetchTrackMedia(artist, track) {
-  // 검색어가 없으면 조회하지 않는다
-  if (!artist && !track) return { artwork: null, previewUrl: null }
-
-  // encodeURIComponent: 공백/특수문자가 있어도 URL이 깨지지 않게 변환
-  const term = encodeURIComponent(`${artist} ${track}`.trim())
-  const url = `${BASE_URL}?term=${term}&entity=song&limit=1&country=KR`
-
-  try {
-    const data = await fetchJson(url, 'iTunes 미디어를 불러오지 못했습니다.')
-    // results[0]가 없으면(검색 결과 없음) 둘 다 없음 처리
-    const first = data.results?.[0]
-    if (!first) return { artwork: null, previewUrl: null }
-
-    // 100x100bb → 512x512bb 로 치환해 고해상도 표지를 얻는다(표지가 있을 때만)
-    const artwork = first.artworkUrl100
-      ? first.artworkUrl100.replace('100x100bb', '512x512bb')
-      : null
-    // 미리듣기 URL(없을 수도 있음)
-    const previewUrl = first.previewUrl ?? null
-
-    return { artwork, previewUrl }
-  } catch {
-    // 네트워크/CORS 등 오류는 무시하고 둘 다 없음으로 처리 (표지는 그라데이션 폴백)
-    return { artwork: null, previewUrl: null }
-  }
 }

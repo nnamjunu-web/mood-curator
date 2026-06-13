@@ -7,7 +7,7 @@ import styles from './LibraryPage.module.css'
 /*
   LibraryPage — '내 보관함' 화면 (경로: /library)
   - localStorage에 저장한 즐겨찾기를 카드로 보여준다.
-  - 분류 필터 + 정렬(최신순/일치도순) + 삭제를 지원한다.
+  - 분류 필터 + 삭제를 지원한다. (목록은 최신 저장이 앞으로 오는 저장 순서 그대로)
 */
 
 // 분류 필터 — 라벨과 실제 item.type 값
@@ -19,13 +19,12 @@ const FILTERS = [
 ]
 
 // 타입(영문) → 한국어 라벨 / 카테고리 아이콘 / 자리표시 그라데이션
-const TYPE_LABEL = { movie: '영화', music: '음악', book: '도서', food: '요리' }
-const TYPE_ICON = { movie: '🎬', music: '🎵', book: '📖', food: '🍳' }
+const TYPE_LABEL = { movie: '영화', music: '음악', book: '도서' }
+const TYPE_ICON = { movie: '🎬', music: '🎵', book: '📖' }
 const TYPE_GRADIENT = {
   movie: 'linear-gradient(160deg, #2f4538, #6f8f7a)',
   music: 'linear-gradient(160deg, #2a1040, #b14de0)',
   book: 'linear-gradient(160deg, #6b5a3a, #c9a87a)',
-  food: 'linear-gradient(160deg, #c98a3a, #f0c87a)',
 }
 
 function LibraryPage() {
@@ -35,9 +34,8 @@ function LibraryPage() {
   // 즐겨찾기 목록 — 처음 한 번 localStorage에서 읽어 초기값으로 둔다
   const [favorites, setFavorites] = useState(() => getFavorites())
 
-  // 현재 선택된 필터와 정렬
+  // 현재 선택된 분류 필터
   const [filter, setFilter] = useState('all')
-  const [sort, setSort] = useState('recent') // 'recent'(최신순) | 'match'(일치도순)
 
   // 휴지통 클릭 → 즐겨찾기에서 삭제 후 화면 갱신
   function handleRemove(item) {
@@ -45,13 +43,8 @@ function LibraryPage() {
     setFavorites(updated)
   }
 
-  // 1) 분류 필터 → 2) 정렬 순으로 화면에 보일 목록을 만든다
-  let visible = filter === 'all' ? favorites : favorites.filter((f) => f.type === filter)
-  if (sort === 'match') {
-    // 일치도순: matchRate 큰 순. 값이 없으면 맨 뒤로(-1)
-    visible = [...visible].sort((a, b) => (b.matchRate ?? -1) - (a.matchRate ?? -1))
-  }
-  // 'recent'(최신순)는 저장된 순서(최근 저장이 앞)를 그대로 사용
+  // 분류 필터만 적용해 화면에 보일 목록을 만든다 (저장된 순서 = 최근 저장이 앞)
+  const visible = filter === 'all' ? favorites : favorites.filter((f) => f.type === filter)
 
   return (
     <div className={styles.page}>
@@ -69,7 +62,7 @@ function LibraryPage() {
         </div>
       ) : (
         <>
-          {/* 필터 + 정렬 줄 */}
+          {/* 분류 필터 줄 */}
           <div className={styles.toolbar}>
             <div className={styles.filters}>
               {FILTERS.map((item) => (
@@ -82,19 +75,6 @@ function LibraryPage() {
                 </button>
               ))}
             </div>
-
-            <label className={styles.sort}>
-              정렬 기준:
-              {/* select: 펼치면 옵션을 고르는 드롭다운 */}
-              <select
-                className={styles.sortSelect}
-                value={sort}
-                onChange={(event) => setSort(event.target.value)}
-              >
-                <option value="recent">최신순</option>
-                <option value="match">일치도순</option>
-              </select>
-            </label>
           </div>
 
           {/* 카드 그리드 */}
