@@ -1,0 +1,15 @@
+/*
+  LoginNotice.module.css — '로그인 필요' 안내 줄 스타일
+  - 연보라 알약 모양으로, 카드 영역 위에 가운데 정렬해 가볍게 알린다.
+*/
+.notice {
+  max-width: 360px;
+  margin: 0 auto 16px;
+  padding: 10px 16px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  border-radius: var(--radius-pill);
+}

@@ -4,7 +4,9 @@ import MoodPill from '../components/MoodPill'
 import ContentCard from '../components/ContentCard'
 import Spinner from '../components/Spinner'
 import TrailerModal from '../components/TrailerModal'
+import LoginNotice from '../components/LoginNotice'
 import { BookmarkIcon } from '../components/Icons'
+import { useAuth } from '../context/AuthContext'
 import { getFavorites, toggleFavorite } from '../services/favorites'
 import { getRecommendations, isAllFailed } from '../services/recommendations'
 import { fetchMovieTrailer } from '../services/tmdb'
@@ -54,6 +56,12 @@ function HomePage() {
   const [recs, setRecs] = useState(null)             // { movies, music, books, errors }
   const [recsMood, setRecsMood] = useState(null)     // 결과의 기준이 된 감정
   const [loadingRecs, setLoadingRecs] = useState(false)
+
+  // useAuth(): 로그인 상태(user)를 AuthContext에서 읽는다 (user가 null이면 비로그인)
+  const { user } = useAuth()
+
+  // 비로그인 사용자가 찜하기를 시도했을 때 띄울 안내 표시 여부
+  const [loginNotice, setLoginNotice] = useState(false)
 
   // 즐겨찾기 전체 목록 — 하트 토글 시 갱신되어 카드/사이드바에 함께 반영
   const [favorites, setFavorites] = useState(() => getFavorites())
@@ -156,6 +164,11 @@ function HomePage() {
 
   // 즐겨찾기 저장/해제 (이미 공통 형태인 항목을 받는다)
   const handleSaveFavorite = (favItem) => {
+    // 비로그인 사용자는 찜할 수 없다 → 저장하지 않고 안내만 띄운다
+    if (!user) {
+      setLoginNotice(true)
+      return
+    }
     const updated = toggleFavorite(favItem)
     setFavorites(updated)
   }
@@ -301,6 +314,9 @@ function HomePage() {
               ))}
             </div>
           )}
+
+          {/* 비로그인 사용자가 찜하기를 누르면 뜨는 안내 */}
+          <LoginNotice show={loginNotice} />
 
           {renderContentBody()}
         </div>

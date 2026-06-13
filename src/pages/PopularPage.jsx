@@ -4,9 +4,11 @@ import { searchKoreanTracks } from '../services/itunes'
 import { fetchBooksByQuery } from '../services/kakaoBooks'
 import { normalizeMovies, normalizeItunesTracks, normalizeKakaoBooks } from '../utils/cardAdapter'
 import { getFavorites, toggleFavorite } from '../services/favorites'
+import { useAuth } from '../context/AuthContext'
 import { BookmarkIcon, ClockIcon } from '../components/Icons'
 import Spinner from '../components/Spinner'
 import DetailLink from '../components/DetailLink'
+import LoginNotice from '../components/LoginNotice'
 import styles from './PopularPage.module.css'
 
 /*
@@ -71,6 +73,11 @@ function PopularPage() {
   // 즐겨찾기 id 목록 (처음 한 번 localStorage에서 읽음)
   const [favoriteIds, setFavoriteIds] = useState(() => getFavorites().map((f) => f.id))
 
+  // useAuth(): 로그인 상태(user)를 읽는다 (null이면 비로그인)
+  const { user } = useAuth()
+  // 비로그인 사용자가 찜하기를 시도했을 때 띄울 안내 표시 여부
+  const [loginNotice, setLoginNotice] = useState(false)
+
   // 인기 데이터 불러오기 (mount 시 + 다시 시도 시)
   useEffect(() => {
     let ignore = false
@@ -121,6 +128,11 @@ function PopularPage() {
 
   // 보관함 저장/해제 (차트 항목은 이미 공통 카드 형태라 그대로 저장)
   function handleSave(item) {
+    // 비로그인 사용자는 찜할 수 없다 → 저장하지 않고 안내만 띄운다
+    if (!user) {
+      setLoginNotice(true)
+      return
+    }
     const updated = toggleFavorite(item)
     setFavoriteIds(updated.map((f) => f.id))
   }
@@ -158,6 +170,9 @@ function PopularPage() {
           <ClockIcon /> 방금 업데이트됨
         </span>
       </div>
+
+      {/* 비로그인 사용자가 찜하기를 누르면 뜨는 안내 */}
+      <LoginNotice show={loginNotice} />
 
       {/* 로딩 */}
       {loading && <Spinner label="인기 차트를 불러오는 중…" />}

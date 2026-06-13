@@ -3,7 +3,9 @@ import { useSearchParams, Link } from 'react-router-dom'
 import { getMoodLabel, getMoodEmoji } from '../utils/moodMapper'
 import { getRecommendations, isAllFailed } from '../services/recommendations'
 import { getFavorites, toggleFavorite } from '../services/favorites'
+import { useAuth } from '../context/AuthContext'
 import RecommendationCard from '../components/RecommendationCard'
+import LoginNotice from '../components/LoginNotice'
 import Spinner from '../components/Spinner'
 import styles from './ResultPage.module.css'
 
@@ -42,6 +44,11 @@ function ResultPage() {
   // 즐겨찾기된 항목들의 id 목록 — 처음엔 localStorage에서 불러온다.
   //   useState(() => ...): 함수를 넣으면 "맨 처음 한 번"만 실행해 초기값을 만든다(지연 초기화)
   const [favoriteIds, setFavoriteIds] = useState(() => getFavorites().map((f) => f.id))
+
+  // useAuth(): 로그인 상태(user)를 읽는다 (null이면 비로그인)
+  const { user } = useAuth()
+  // 비로그인 사용자가 찜하기를 시도했을 때 띄울 안내 표시 여부
+  const [loginNotice, setLoginNotice] = useState(false)
 
   // mood가 바뀌거나 다시 시도할 때마다 추천 데이터를 불러온다
   useEffect(() => {
@@ -83,6 +90,11 @@ function ResultPage() {
       입력: item(공통 카드 객체)
   */
   function handleToggleSave(item) {
+    // 비로그인 사용자는 찜할 수 없다 → 저장하지 않고 안내만 띄운다
+    if (!user) {
+      setLoginNotice(true)
+      return
+    }
     const updated = toggleFavorite(item) // localStorage 갱신 + 새 목록 반환
     setFavoriteIds(updated.map((f) => f.id)) // 화면도 함께 갱신
   }
@@ -138,6 +150,9 @@ function ResultPage() {
         )}
         <p className={styles.desc}>이 감정에 어울리는 영화·음악·책을 모아왔어요.</p>
       </section>
+
+      {/* 비로그인 사용자가 찜하기를 누르면 뜨는 안내 */}
+      <LoginNotice show={loginNotice} />
 
       {/* ===== 본문: 로딩 / 전체 에러 / 결과 세 가지 중 하나 ===== */}
       {loading && <Spinner label="추천 콘텐츠를 불러오는 중…" />}
