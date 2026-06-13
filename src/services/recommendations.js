@@ -5,33 +5,12 @@
 */
 
 import { getRecommendationKeys } from '../utils/emotionMapper'
-import { normalizeMovies, normalizeTracks, normalizeBooks } from '../utils/cardAdapter'
+import { normalizeMovies, normalizeItunesTracks, normalizeKakaoBooks } from '../utils/cardAdapter'
 import { pickRandom } from '../utils/random'
 import { fetchMoviesByGenre } from './tmdb'
-import { fetchTracksByTag } from './lastfm'
-import { fetchBooksBySubject } from './openLibrary'
-import { fetchAlbumArt } from './itunes'
+import { searchKoreanTracks } from './itunes'
+import { fetchBooksByQuery } from './kakaoBooks'
 import { getRecentIds, setRecentIds } from './recents'
-
-/*
-  fillMusicArtwork — 음악 카드들에 iTunes 앨범 표지를 채워 넣는다.
-    입력: tracks (정규화된 음악 카드 배열)
-    반환: Promise<음악 카드 배열> — image가 채워진(또는 그대로인) 새 배열
-  - Last.fm 표지가 비어 있을 때만(iTunes로) 보강하고, 이미 있으면 그대로 둔다.
-  - Promise.all: 여러 곡의 표지를 "동시에" 조회해 빠르게 끝낸다.
-*/
-export async function fillMusicArtwork(tracks) {
-  return Promise.all(
-    tracks.map(async (track) => {
-      // 이미 표지가 있으면 추가 조회 없이 그대로 사용
-      if (track.image) return track
-      // 아티스트(subtitle) + 곡명(title)으로 iTunes 표지 조회
-      const artwork = await fetchAlbumArt(track.subtitle, track.title)
-      // 찾았으면 image를 채운 새 객체로, 못 찾았으면 원본 그대로(그라데이션 폴백)
-      return artwork ? { ...track, image: artwork } : track
-    })
-  )
-}
 
 /*
   getRecommendations — 감정 코드를 받아 세 종류의 추천을 동시에 가져온다.
@@ -49,19 +28,20 @@ export async function getRecommendations(mood, limit = 8) {
   // 2) 세 API를 동시에 호출 (allSettled는 절대 reject되지 않음)
   const [movieResult, musicResult, bookResult] = await Promise.allSettled([
     fetchMoviesByGenre(keys.movieGenreId),
-    fetchTracksByTag(keys.musicTag),
-    fetchBooksBySubject(keys.bookSubject),
+    searchKoreanTracks(keys.musicTag),   // iTunes 한국 스토어(한글 검색어)
+    fetchBooksByQuery(keys.bookSubject), // 카카오 책검색(한글 검색어)
   ])
 
   // 3) 성공(fulfilled)한 것만 공통 카드 형태로 변환 → 넓은 후보 풀을 만든다(자르지 않음)
+  //    음악은 iTunes 검색 결과에 표지·미리듣기가 이미 들어 있어 별도 보강이 필요 없다.
   const moviePool = movieResult.status === 'fulfilled' ? normalizeMovies(movieResult.value) : []
-  const musicPool = musicResult.status === 'fulfilled' ? normalizeTracks(musicResult.value) : []
-  const bookPool = bookResult.status === 'fulfilled' ? normalizeBooks(bookResult.value) : []
+  const musicPool = musicResult.status === 'fulfilled' ? normalizeItunesTracks(musicResult.value) : []
+  const bookPool = bookResult.status === 'fulfilled' ? normalizeKakaoBooks(bookResult.value) : []
 
   // 4) 후보 풀에서 "직전에 보여준 항목을 빼고, 섞어서" limit개만 뽑는다
   //    → 감정에는 항상 맞지만(매핑 유지) 매번 다른 추천이 나온다
   const movies = pickRandom(moviePool, limit, getRecentIds('movie'))
-  let music = pickRandom(musicPool, limit, getRecentIds('music'))
+  const music = pickRandom(musicPool, limit, getRecentIds('music'))
   const books = pickRandom(bookPool, limit, getRecentIds('book'))
 
   // 5) 이번에 보여준 ID를 저장해 다음 추천에서 제외(같은 게 또 안 나오게).
@@ -70,12 +50,7 @@ export async function getRecommendations(mood, limit = 8) {
   if (music.length > 0) setRecentIds('music', music.map((m) => m.id))
   if (books.length > 0) setRecentIds('book', books.map((b) => b.id))
 
-  // 6) 음악은 표지가 비는 경우가 많아 iTunes 표지로 보강한다(뽑힌 곡만 조회)
-  if (music.length > 0) {
-    music = await fillMusicArtwork(music)
-  }
-
-  // 4) 실패한 카테고리에만 안내 문구 (성공이면 null)
+  // 6) 실패한 카테고리에만 안내 문구 (성공이면 null)
   const errors = {
     movies: movieResult.status === 'rejected' ? '영화 추천을 불러오지 못했어요.' : null,
     music: musicResult.status === 'rejected' ? '음악 추천을 불러오지 못했어요.' : null,

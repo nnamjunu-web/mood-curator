@@ -1,6 +1,7 @@
 import MatchBadge from './MatchBadge'
 import TagChip from './TagChip'
 import ToggleButton from './ToggleButton'
+import DetailLink from './DetailLink'
 import styles from './ContentCard.module.css'
 
 /*
@@ -21,6 +22,11 @@ import styles from './ContentCard.module.css'
       tags       : 태그 문자열 배열 — 선택
       onCornerClick : 우상단 버튼 클릭 시 실행할 함수 — 선택
       onClick    : 카드 본문 클릭 시 실행할 함수 — 선택
+      onPlayTrailer  : (영화) '예고편 보기' 클릭 시 실행할 함수 — 선택. 주면 예고편 버튼이 보인다
+      previewUrl     : (음악) 30초 미리듣기 URL — 선택. null이면 버튼이 비활성화된다
+      onTogglePreview: (음악) 미리듣기 재생/정지 토글 함수 — 선택. 주면 미리듣기 버튼이 보인다
+      isPreviewPlaying: (음악) 지금 이 카드가 재생 중인지 — 버튼 라벨(▶/⏸)에 사용
+      link       : 외부 상세 페이지 URL — 선택. 있으면 본문 하단에 '자세히 보기' 링크를 보여준다
 */
 function ContentCard({
   gradient,
@@ -36,6 +42,11 @@ function ContentCard({
   tags = [],
   onCornerClick,
   onClick,
+  onPlayTrailer,
+  previewUrl,
+  onTogglePreview,
+  isPreviewPlaying = false,
+  link,
 }) {
   // 우상단 버튼을 눌렀을 때: 카드 본문 클릭(onClick)까지 같이 실행되지 않도록 전파를 막는다
   const handleCornerClick = (event) => {
@@ -50,6 +61,13 @@ function ContentCard({
   const thumbStyle = image
     ? { backgroundImage: `url(${image})` }
     : { background: gradient }
+
+  // 음악 미리듣기 버튼에 보일 글자 (URL 없음 / 재생 중 / 대기)
+  //   - 중첩 삼항연산자 대신 if로 풀어 읽기 쉽게 했다(동작은 동일).
+  let previewLabel = '미리듣기 없음'
+  if (previewUrl) {
+    previewLabel = isPreviewPlaying ? '⏸ 정지' : '▶ 미리듣기'
+  }
 
   return (
     <article className={cardClass} onClick={onClick}>
@@ -74,6 +92,40 @@ function ContentCard({
             />
           </div>
         )}
+
+        {/* 미리보기 버튼 자리(이미지 하단 가운데). 영화/음악 중 해당 props가 있을 때만 보인다 */}
+        {(onPlayTrailer || onTogglePreview) && (
+          <div className={styles.previewSlot}>
+            {/* 영화: 예고편 보기 → 부모가 모달을 띄운다 */}
+            {onPlayTrailer && (
+              <button
+                type="button"
+                className={styles.previewButton}
+                onClick={(event) => {
+                  event.stopPropagation() // 카드 본문 onClick으로 번지지 않게
+                  onPlayTrailer()
+                }}
+              >
+                ▶ 예고편
+              </button>
+            )}
+
+            {/* 음악: 미리듣기 토글 (URL이 없으면 비활성화) */}
+            {onTogglePreview && (
+              <button
+                type="button"
+                className={styles.previewButton}
+                disabled={!previewUrl}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  onTogglePreview()
+                }}
+              >
+                {previewLabel}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* 본문 영역 */}
@@ -96,6 +148,13 @@ function ContentCard({
             {tags.map((tag) => (
               <TagChip key={tag} label={tag} />
             ))}
+          </div>
+        )}
+
+        {/* 자세히 보기 링크는 link가 있을 때만 (공통 DetailLink 사용) */}
+        {link && (
+          <div className={styles.detailRow}>
+            <DetailLink href={link} />
           </div>
         )}
       </div>

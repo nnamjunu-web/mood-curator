@@ -1,0 +1,23 @@
+/*
+  DetailLink.module.css — '자세히 보기' 링크 스타일
+  - 색/굵기는 index.css의 디자인 토큰을 그대로 쓴다(앱 전체 톤 통일).
+*/
+
+/* 기본: 글자 + 화살표 링크 */
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.link:hover {
+  color: var(--color-primary-strong);
+}
+
+/* 좁은 자리용: 화살표(↗)만, 조금 크게 */
+.iconOnly {
+  font-size: 16px;
+}

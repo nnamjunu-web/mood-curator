@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { fetchPopularMovies } from '../services/tmdb'
-import { fetchTopTracks } from '../services/lastfm'
-import { fetchBooksBySubject } from '../services/openLibrary'
-import { normalizeMovies, normalizeTracks, normalizeBooks } from '../utils/cardAdapter'
-import { fillMusicArtwork } from '../services/recommendations'
+import { searchKoreanTracks } from '../services/itunes'
+import { fetchBooksByQuery } from '../services/kakaoBooks'
+import { normalizeMovies, normalizeItunesTracks, normalizeKakaoBooks } from '../utils/cardAdapter'
 import { getFavorites, toggleFavorite } from '../services/favorites'
 import { BookmarkIcon, ClockIcon } from '../components/Icons'
 import Spinner from '../components/Spinner'
+import DetailLink from '../components/DetailLink'
 import styles from './PopularPage.module.css'
 
 /*
@@ -80,23 +80,20 @@ function PopularPage() {
       setGlobalError(null)
 
       // 세 곳의 인기 목록을 동시에 요청 (일부 실패해도 멈추지 않음)
-      //  - 도서는 진짜 '인기' API가 없어 넓은 주제(fiction)로 근사한다 (진짜 인기 아님)
+      //  - 음악·도서는 진짜 '인기' API가 없어 넓은 한글 검색어('가요'/'베스트셀러')로 근사한다 (진짜 인기 아님)
       const [movieRes, trackRes, bookRes] = await Promise.allSettled([
         fetchPopularMovies(),
-        fetchTopTracks(),
-        fetchBooksBySubject('fiction'),
+        searchKoreanTracks('가요', PER_CATEGORY), // iTunes 한국 스토어
+        fetchBooksByQuery('베스트셀러'),
       ])
 
       if (ignore) return
 
       // 성공한 것만 공통 카드 형태로 변환 + 카테고리별 개수 제한
+      //  - iTunes 음악은 표지·미리듣기가 이미 들어 있어 별도 보강이 필요 없다.
       const movies = movieRes.status === 'fulfilled' ? normalizeMovies(movieRes.value).slice(0, PER_CATEGORY) : []
-      let music = trackRes.status === 'fulfilled' ? normalizeTracks(trackRes.value).slice(0, PER_CATEGORY) : []
-      const books = bookRes.status === 'fulfilled' ? normalizeBooks(bookRes.value).slice(0, PER_CATEGORY) : []
-
-      // 음악 표지는 비는 경우가 많아 iTunes 표지로 보강
-      if (music.length > 0) music = await fillMusicArtwork(music)
-      if (ignore) return
+      const music = trackRes.status === 'fulfilled' ? normalizeItunesTracks(trackRes.value).slice(0, PER_CATEGORY) : []
+      const books = bookRes.status === 'fulfilled' ? normalizeKakaoBooks(bookRes.value).slice(0, PER_CATEGORY) : []
 
       // 세 목록을 번갈아 섞어 하나의 차트로
       setItems(interleave([movies, music, books]))
@@ -201,6 +198,8 @@ function PopularPage() {
                         <span className={styles.statLabel}>분류</span>
                         <span className={styles.statValue}>{TYPE_LABEL[feature.type]}</span>
                       </div>
+                      {/* 자세히 보기 (링크가 있을 때만) */}
+                      <DetailLink href={feature.link} />
                       <button
                         className={isSaved(feature.id) ? `${styles.saveButton} ${styles.saveButtonActive}` : styles.saveButton}
                         onClick={() => handleSave(feature)}
@@ -224,6 +223,8 @@ function PopularPage() {
                         <span className={styles.sideCategory}>{TYPE_LABEL[item.type]}</span>
                         <h3 className={styles.sideTitle}>{item.title}</h3>
                         {item.subtitle && <p className={styles.sideMeta}>{item.subtitle}</p>}
+                        {/* 자세히 보기 (링크가 있을 때만) */}
+                        <DetailLink href={item.link} />
                       </div>
                       <button
                         className={isSaved(item.id) ? `${styles.addButton} ${styles.addButtonActive}` : styles.addButton}
@@ -250,6 +251,8 @@ function PopularPage() {
                         {TYPE_LABEL[item.type]}{item.subtitle ? ` • ${item.subtitle}` : ''}
                       </p>
                     </div>
+                    {/* 좁은 줄이라 화살표(↗) 아이콘만 — 링크가 있을 때만 보인다 */}
+                    <DetailLink href={item.link} iconOnly />
                     <button
                       className={styles.rankBookmark}
                       onClick={() => handleSave(item)}

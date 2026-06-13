@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { getFavorites, removeFavorite } from '../services/favorites'
 import ContentCard from '../components/ContentCard'
 import styles from './LibraryPage.module.css'
@@ -7,7 +7,7 @@ import styles from './LibraryPage.module.css'
 /*
   LibraryPage — '내 보관함' 화면 (경로: /library)
   - localStorage에 저장한 즐겨찾기를 카드로 보여준다.
-  - 분류 필터 + 정렬(최신순/일치도순) + 상단 검색창(무드 태그 기준) + 삭제를 지원한다.
+  - 분류 필터 + 정렬(최신순/일치도순) + 삭제를 지원한다.
 */
 
 // 분류 필터 — 라벨과 실제 item.type 값
@@ -32,10 +32,6 @@ function LibraryPage() {
   // useNavigate(): navigate('/경로')로 페이지를 이동시키는 함수
   const navigate = useNavigate()
 
-  // 상단 검색창이 URL에 써둔 q 값을 읽는다 (Header가 입력 → 여기서 필터)
-  const [searchParams] = useSearchParams()
-  const query = (searchParams.get('q') ?? '').trim().toLowerCase()
-
   // 즐겨찾기 목록 — 처음 한 번 localStorage에서 읽어 초기값으로 둔다
   const [favorites, setFavorites] = useState(() => getFavorites())
 
@@ -49,18 +45,8 @@ function LibraryPage() {
     setFavorites(updated)
   }
 
-  // 검색어가 항목과 맞는지 (무드 태그칩 우선, 제목/제작자도 보조로 확인)
-  function matchesQuery(item) {
-    if (!query) return true
-    const inTags = (item.tags ?? []).some((tag) => tag.toLowerCase().includes(query))
-    const inTitle = item.title?.toLowerCase().includes(query)
-    const inSubtitle = item.subtitle?.toLowerCase().includes(query)
-    return inTags || inTitle || inSubtitle
-  }
-
-  // 1) 분류 필터 → 2) 검색 필터 → 3) 정렬 순으로 화면에 보일 목록을 만든다
+  // 1) 분류 필터 → 2) 정렬 순으로 화면에 보일 목록을 만든다
   let visible = filter === 'all' ? favorites : favorites.filter((f) => f.type === filter)
-  visible = visible.filter(matchesQuery)
   if (sort === 'match') {
     // 일치도순: matchRate 큰 순. 값이 없으면 맨 뒤로(-1)
     visible = [...visible].sort((a, b) => (b.matchRate ?? -1) - (a.matchRate ?? -1))
@@ -131,6 +117,7 @@ function LibraryPage() {
                 tags={item.tags ?? []}
                 cornerIcon="trash"
                 onCornerClick={() => handleRemove(item)}
+                link={item.link} // 외부 상세 페이지 '자세히 보기' 링크
               />
             ))}
 

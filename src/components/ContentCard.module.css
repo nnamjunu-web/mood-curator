@@ -39,6 +39,36 @@
   right: 12px;
 }
 
+/* 미리보기 버튼 자리 — 이미지 하단 가운데 */
+.previewSlot {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+}
+
+/* 예고편/미리듣기 버튼 (반투명 검은 알약) */
+.previewButton {
+  border: none;
+  border-radius: var(--radius-pill);
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 16px;
+  backdrop-filter: blur(2px);     /* 뒤 이미지를 살짝 흐리게 해 글자가 잘 보이게 */
+}
+
+.previewButton:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.82);
+}
+
+/* 미리듣기 URL이 없을 때(비활성) */
+.previewButton:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 /* 본문 영역 패딩 */
 .body {
   padding: 14px 16px 18px;
@@ -91,4 +121,9 @@
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 4px;
+}
+
+/* 자세히 보기 링크 줄 (본문 맨 아래) */
+.detailRow {
+  margin-top: 12px;
 }

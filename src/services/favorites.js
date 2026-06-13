@@ -1,6 +1,11 @@
+import { getCurrentUser } from './auth'
+
 /*
   favorites.js — '즐겨찾기'를 브라우저 저장소(localStorage)에 보관하는 함수 모음
   - 서버 DB가 없으므로, 사용자가 마음에 든 항목을 브라우저에 직접 저장한다.
+  - 로그인한 사용자마다 보관함을 따로 쓰도록, 저장 열쇠에 이메일을 붙인다
+    (예: moodcurator:favorites:hong@x.com). 비로그인 상태면 'guest' 보관함을 쓴다.
+    → 이렇게 하면 계정을 바꿔 로그인했을 때 각자의 보관함이 보인다.
 
   ───────────────────────────────────────────────────────────────
   ● localStorage 란?
@@ -19,8 +24,16 @@
   ───────────────────────────────────────────────────────────────
 */
 
-// 저장에 사용할 열쇠(key) 이름 — 다른 데이터와 겹치지 않게 접두어를 붙였다
-const STORAGE_KEY = 'moodcurator:favorites'
+/*
+  storageKey — 지금 로그인한 사용자에 맞는 저장 열쇠(key)를 만들어 돌려준다.
+    입력: 없음
+    반환: 문자열 — 로그인 시 'moodcurator:favorites:<이메일>', 비로그인 시 'moodcurator:favorites:guest'
+    ※ 고정 상수가 아니라 함수로 둔 이유: 호출 시점의 로그인 사용자에 따라 키가 달라져야 하기 때문.
+*/
+function storageKey() {
+  const user = getCurrentUser() // { email, nickname } 또는 null
+  return user ? `moodcurator:favorites:${user.email}` : 'moodcurator:favorites:guest'
+}
 
 /*
   getFavorites — 저장된 즐겨찾기 목록(배열)을 읽어온다.
@@ -30,8 +43,8 @@ const STORAGE_KEY = 'moodcurator:favorites'
 export function getFavorites() {
   // try/catch: 저장값이 깨져서 JSON.parse가 실패해도 앱이 멈추지 않게 보호
   try {
-    const raw = localStorage.getItem(STORAGE_KEY) // 문자열 또는 null
-    return raw ? JSON.parse(raw) : []             // 문자열을 배열로 복원
+    const raw = localStorage.getItem(storageKey()) // 문자열 또는 null
+    return raw ? JSON.parse(raw) : []              // 문자열을 배열로 복원
   } catch {
     return []
   }
@@ -44,7 +57,7 @@ export function getFavorites() {
 */
 function saveFavorites(list) {
   // 배열을 JSON 문자열로 바꿔서 저장 (localStorage는 문자열만 가능)
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
+  localStorage.setItem(storageKey(), JSON.stringify(list))
 }
 
 /*

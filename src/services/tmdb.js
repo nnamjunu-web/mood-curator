@@ -46,6 +46,57 @@ export async function fetchMoviesByGenre(genreId, language = 'ko-KR') {
 }
 
 /*
+  pickTrailerKey — TMDB 영상 목록에서 보여줄 유튜브 예고편 1개의 key를 고른다(내부 전용).
+    입력: results (TMDB /videos 응답의 results 배열, 각 원소: { key, site, type, official, ... })
+    반환: 유튜브 영상 key 문자열 또는 null
+  - 우선순위: 'YouTube'이면서 'Trailer'인 공식(official) 영상 → 아무 Trailer → 아무 YouTube 영상.
+*/
+function pickTrailerKey(results) {
+  // 유튜브에 올라간 영상만 추린다(다른 사이트는 iframe 임베드 방식이 달라 제외)
+  const youtube = results.filter((video) => video.site === 'YouTube')
+  if (youtube.length === 0) return null
+
+  // 그중 '예고편(Trailer)' 종류만 따로 모은다
+  const trailers = youtube.filter((video) => video.type === 'Trailer')
+
+  // 공식 예고편 우선 → 없으면 첫 예고편 → 그래도 없으면 첫 유튜브 영상
+  // find: 조건을 만족하는 첫 원소(없으면 undefined) / ??: 앞이 비면 뒷값 사용
+  const chosen = trailers.find((video) => video.official) ?? trailers[0] ?? youtube[0]
+  return chosen ? chosen.key : null
+}
+
+/*
+  fetchMovieTrailer — 영화 하나의 유튜브 예고편 key를 가져온다(예고편 보기 클릭 시 호출).
+    입력: movieId(TMDB 영화 숫자 id)
+    반환: Promise<string|null> — 유튜브 영상 key(예: 'abc123') 또는 null(예고편 없음)
+
+  - TMDB /movie/{id}/videos 엔드포인트는 그 영화의 예고편·클립 영상 목록을 돌려준다.
+  - 한국어(ko-KR)는 영상이 비는 경우가 많아, 비면 영어(en-US)로 한 번 더 시도한다.
+  - 호출 쪽에서 `https://www.youtube.com/embed/{key}` 형태로 iframe에 끼워 재생한다.
+*/
+export async function fetchMovieTrailer(movieId) {
+  // 흐름 분기: 키가 없으면 친절한 에러로 막는다
+  if (!API_KEY) {
+    throw new Error('TMDB API 키가 없습니다. .env의 VITE_TMDB_API_KEY를 확인하세요.')
+  }
+
+  // 특정 언어로 영상 목록을 받아오는 작은 도우미 (같은 호출을 언어만 바꿔 두 번 쓰므로 분리)
+  async function queryVideos(language) {
+    const url = `${BASE_URL}/movie/${movieId}/videos?api_key=${API_KEY}&language=${language}`
+    const data = await fetchJson(url, '예고편을 불러오지 못했습니다.')
+    return data.results ?? []
+  }
+
+  // 1) 한국어로 먼저 시도
+  let key = pickTrailerKey(await queryVideos('ko-KR'))
+  // 2) 비었으면 영어로 재시도
+  if (!key) {
+    key = pickTrailerKey(await queryVideos('en-US'))
+  }
+  return key
+}
+
+/*
   fetchPopularMovies — 지금 인기 있는 영화 목록을 받아온다 (인기 차트용).
     입력: language(언어, 기본 한국어)
     반환: Promise<영화 배열>

@@ -1,0 +1,70 @@
+/*
+  TrailerModal.module.css — 예고편 모달 스타일
+  - 화면 전체를 덮는 반투명 검은 배경 + 가운데 박스.
+*/
+
+/* 화면 전체를 덮는 어두운 배경(클릭 시 닫힘) */
+.overlay {
+  position: fixed;
+  inset: 0;                       /* top/right/bottom/left 0 — 화면 전체 */
+  background: rgba(20, 16, 32, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 100;                   /* 다른 요소들 위에 뜨도록 */
+}
+
+/* 가운데 예고편 박스 */
+.modal {
+  position: relative;
+  width: 100%;
+  max-width: 880px;
+  background: #000;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+/* 닫기(✕) 버튼 — 박스 우상단 */
+.close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 16px;
+}
+
+.close:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+/* 로딩/없음 안내 문구 */
+.message {
+  color: #fff;
+  text-align: center;
+  font-size: 16px;
+  padding: 64px 24px;
+}
+
+/* 16:9 비율 유지용 래퍼 (padding-top 56.25% = 9/16) */
+.frameWrap {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;
+}
+
+/* iframe을 래퍼에 꽉 채운다 */
+.iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}

@@ -1,5 +1,8 @@
 /*
   lastfm.js — Last.fm에서 태그(분위기/장르)로 인기 음악을 받아오는 API 함수
+
+  ⚠️ [현재 미사용] 추천·인기 음악을 한국 음악(iTunes 한국 스토어 검색, services/itunes.js)으로
+     옮기면서 이 파일은 어디서도 import하지 않는다. 태그 기반 + 키(api_key) 쿼리 호출 예시로 남겨둔다.
 */
 
 import { fetchJson } from './http'

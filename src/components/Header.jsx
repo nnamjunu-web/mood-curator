@@ -1,31 +1,24 @@
-import { NavLink, useLocation, useSearchParams } from 'react-router-dom'
-import { BellIcon, SearchIcon } from './Icons'
+import { NavLink, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import styles from './Header.module.css'
 
 /*
   Header — 모든 페이지 위쪽에 고정으로 보이는 상단 내비게이션 바
-  - 로고 + 메뉴(추천/인기/내 보관함) + (보관함에서만) 검색창 + 알림/프로필로 구성된다.
-  - 검색어는 URL의 ?q= 에 저장한다. 이렇게 하면 보관함 페이지가 같은 URL을 읽어
-    별도의 전역 상태 없이도 검색 결과를 필터링할 수 있다.
+  - 로고 + 메뉴(추천/인기/내 보관함) + 로그인 영역으로 구성된다.
+  - 오른쪽 끝은 로그인 상태에 따라 달라진다: 비로그인 → 로그인/회원가입 링크,
+    로그인 → 닉네임 + 로그아웃 버튼.
 */
 function Header() {
-  // useLocation(): 현재 주소 정보를 돌려준다 (pathname으로 어떤 페이지인지 확인)
-  const location = useLocation()
+  // useNavigate(): navigate('/경로')로 페이지를 이동시키는 함수 (로그아웃 후 홈으로 보낼 때 사용)
+  const navigate = useNavigate()
 
-  // useSearchParams(): URL의 쿼리(?q=..)를 읽고 쓰는 react-router 훅
-  const [searchParams, setSearchParams] = useSearchParams()
+  // useAuth(): 로그인 상태(user)와 로그아웃 함수를 AuthContext에서 꺼내온다
+  const { user, logOut } = useAuth()
 
-  // 검색창은 '내 보관함'(/library)에서만 보여준다
-  const showSearch = location.pathname === '/library'
-  const query = searchParams.get('q') ?? ''
-
-  // 입력할 때마다 URL의 q 값을 갱신 (replace: true → 뒤로가기 기록이 쌓이지 않게)
-  const handleSearch = (event) => {
-    const value = event.target.value
-    const next = new URLSearchParams(searchParams)
-    if (value) next.set('q', value)
-    else next.delete('q')
-    setSearchParams(next, { replace: true })
+  // 로그아웃 버튼 클릭 → 세션 제거 후 홈으로 이동
+  const handleLogout = () => {
+    logOut()
+    navigate('/')
   }
 
   // 현재 메뉴가 활성 상태인지에 따라 다른 CSS 클래스를 돌려주는 함수
@@ -47,24 +40,24 @@ function Header() {
           <NavLink to="/library" className={navClass}>내 보관함</NavLink>
         </nav>
 
-        {/* 오른쪽: (보관함에서만) 검색창 + 알림 종 + 프로필 동그라미 */}
+        {/* 오른쪽: 로그인 상태에 따른 영역 */}
         <div className={styles.actions}>
-          {showSearch && (
-            <div className={styles.search}>
-              <SearchIcon />
-              <input
-                type="text"
-                value={query}
-                onChange={handleSearch}
-                placeholder="감정 검색..."
-                aria-label="감정 태그 검색"
-              />
+          {/* 로그인 상태에 따라 다르게 그린다(조건부 렌더링) */}
+          {user ? (
+            // 로그인 상태: 닉네임 + 로그아웃 버튼
+            <div className={styles.userBox}>
+              <span className={styles.nickname}>{user.nickname}님</span>
+              <button className={styles.logoutButton} onClick={handleLogout}>
+                로그아웃
+              </button>
+            </div>
+          ) : (
+            // 비로그인 상태: 로그인 / 회원가입 링크
+            <div className={styles.authLinks}>
+              <NavLink to="/login" className={styles.loginLink}>로그인</NavLink>
+              <NavLink to="/signup" className={styles.signupLink}>회원가입</NavLink>
             </div>
           )}
-          <button className={styles.iconButton} aria-label="알림">
-            <BellIcon />
-          </button>
-          <div className={styles.avatar} aria-label="프로필" />
         </div>
       </div>
     </header>

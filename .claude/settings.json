@@ -6,7 +6,17 @@
       "Bash(ls src/data)",
       "Bash(curl -s \"https://www.googleapis.com/books/v1/volumes?q=subject:fiction&maxResults=2\")",
       "Bash(echo \"---exit:$?---\")",
-      "Bash(curl -s \"https://openlibrary.org/search.json?subject=fiction&limit=2&offset=3&fields=key,title,author_name,cover_i\")"
+      "Bash(curl -s \"https://openlibrary.org/search.json?subject=fiction&limit=2&offset=3&fields=key,title,author_name,cover_i\")",
+      "Bash(curl -s \"https://openlibrary.org/search.json?subject=Poetry&language=kor&limit=5&fields=title,author_name,cover_i\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('numFound:', d.get\\('numFound'\\)\\); [print\\('-', x.get\\('title'\\), '| cover:', x.get\\('cover_i'\\)\\) for x in d.get\\('docs',[]\\)]\")",
+      "Bash(curl -s \"https://openlibrary.org/search.json?subject=Humor&language=kor&limit=5&fields=title,author_name,cover_i\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('numFound:', d.get\\('numFound'\\)\\); [print\\('-', x.get\\('title'\\),'| cover:',x.get\\('cover_i'\\)\\) for x in d.get\\('docs',[]\\)]\")",
+      "Bash(curl -s \"https://openlibrary.org/search.json?subject=Self-Help&language=kor&limit=5&fields=title,author_name,cover_i\")",
+      "Bash(curl -s \"https://openlibrary.org/search.json?subject=Poetry&language=kor&limit=6&fields=title,author_name\")",
+      "Bash(curl -s \"https://openlibrary.org/search.json?subject=Poetry&limit=4&fields=title\")",
+      "Bash(curl -s \"https://itunes.apple.com/search?term=%EB%B0%9C%EB%9D%BC%EB%93%9C&entity=song&country=KR&limit=5\")",
+      "Bash(curl -s \"https://itunes.apple.com/search?term=%EA%B0%80%EC%9A%94&entity=song&country=KR&limit=4\")",
+      "Bash(curl -s -G \"https://itunes.apple.com/search\" --data-urlencode \"term=감성\" --data-urlencode \"entity=song\" --data-urlencode \"country=KR\" --data-urlencode \"limit=2\")"
     ]
   }
 }

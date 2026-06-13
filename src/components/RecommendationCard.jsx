@@ -1,4 +1,5 @@
 import ToggleButton from './ToggleButton'
+import DetailLink from './DetailLink'
 import styles from './RecommendationCard.module.css'
 
 /*
@@ -45,14 +46,8 @@ function RecommendationCard({ item, isSaved, onToggleSave }) {
 
         {/* 하단: 자세히 보기 링크 + 즐겨찾기 버튼 */}
         <div className={styles.bottomRow}>
-          {link ? (
-            // target="_blank": 새 탭에서 열기 / rel="noreferrer": 보안상 권장 설정
-            <a className={styles.link} href={link} target="_blank" rel="noreferrer">
-              자세히 보기 ↗
-            </a>
-          ) : (
-            <span /> /* 링크가 없을 때 자리만 차지해 버튼을 오른쪽으로 밀어줌 */
-          )}
+          {/* 공통 DetailLink로 통일. 링크가 없으면 자리만 차지해 버튼을 오른쪽으로 밀어줌 */}
+          {link ? <DetailLink href={link} /> : <span />}
 
           <ToggleButton
             icon="bookmark"

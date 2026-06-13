@@ -1,11 +1,13 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import MoodPill from '../components/MoodPill'
 import ContentCard from '../components/ContentCard'
 import Spinner from '../components/Spinner'
+import TrailerModal from '../components/TrailerModal'
 import { BookmarkIcon } from '../components/Icons'
 import { getFavorites, toggleFavorite } from '../services/favorites'
 import { getRecommendations, isAllFailed } from '../services/recommendations'
+import { fetchMovieTrailer } from '../services/tmdb'
 import { getMoodLabel } from '../utils/moodMapper'
 import styles from './HomePage.module.css'
 
@@ -58,6 +60,78 @@ function HomePage() {
   const [favorites, setFavorites] = useState(() => getFavorites())
   const favoriteIds = favorites.map((f) => f.id)
   const savedItems = favorites.slice(0, 3)
+
+  // ── 음악 미리듣기 상태 ──────────────────────────────
+  // audioRef: 화면에 다시 그려도 유지돼야 하는 '오디오 재생기'를 담아둔다(useRef는 값이 바뀌어도 리렌더 안 함)
+  const audioRef = useRef(null)
+  // 지금 재생 중인 카드의 id (없으면 null) — 카드 버튼이 ▶/⏸ 중 무엇을 보일지 결정
+  const [playingId, setPlayingId] = useState(null)
+
+  // ── 영화 예고편(모달) 상태 ─────────────────────────
+  // status: 'closed' | 'loading' | 'ready' | 'empty'
+  const [trailer, setTrailer] = useState({ status: 'closed', videoKey: null, title: '' })
+
+  // useEffect: 컴포넌트가 처음 화면에 나타난 직후 오디오 재생기를 한 번 만들어 둔다
+  useEffect(() => {
+    // new Audio(): 입력=없음(또는 URL) / 반환=오디오를 재생/정지할 수 있는 객체
+    const audio = new Audio()
+    audioRef.current = audio
+    // 곡이 끝까지 재생되면 '재생 중' 표시를 끈다
+    const handleEnded = () => setPlayingId(null)
+    audio.addEventListener('ended', handleEnded)
+    // 정리: 페이지를 떠날 때(언마운트) 재생을 멈추고 리스너를 제거한다
+    return () => {
+      audio.pause()
+      audio.removeEventListener('ended', handleEnded)
+    }
+  }, [])
+
+  // 음악 카드의 미리듣기 버튼: 같은 곡이면 정지, 다른 곡이면 이전 곡을 멈추고 새로 재생
+  function handleTogglePreview(item) {
+    const audio = audioRef.current
+    if (!audio) return
+
+    // 이미 이 곡이 재생 중이면 정지
+    if (playingId === item.id) {
+      audio.pause()
+      setPlayingId(null)
+      return
+    }
+    // 미리듣기 URL이 없으면 아무것도 하지 않음(버튼은 비활성이지만 안전장치)
+    if (!item.previewUrl) return
+
+    // 다른 곡 재생: src를 바꿔 재생하면 이전 곡은 자동으로 끊긴다(=한 번에 하나만)
+    audio.src = item.previewUrl
+    audio.play()
+    setPlayingId(item.id)
+  }
+
+  // 영화 카드의 '예고편 보기' 버튼: 그 순간에만 TMDB에서 예고편을 불러온다(지연 로딩)
+  async function handleOpenTrailer(item) {
+    // 예고편을 열 때 재생 중인 미리듣기가 있으면 멈춰 소리가 겹치지 않게 한다
+    audioRef.current?.pause()
+    setPlayingId(null)
+
+    // 먼저 '불러오는 중' 모달을 띄운다
+    setTrailer({ status: 'loading', videoKey: null, title: item.title })
+    try {
+      const videoKey = await fetchMovieTrailer(item.previewId)
+      // key가 있으면 'ready', 없으면 'empty'(예고편 없음)
+      setTrailer({
+        status: videoKey ? 'ready' : 'empty',
+        videoKey,
+        title: item.title,
+      })
+    } catch {
+      // 호출 실패도 '예고편 없음'으로 부드럽게 처리
+      setTrailer({ status: 'empty', videoKey: null, title: item.title })
+    }
+  }
+
+  // 모달 닫기
+  function handleCloseTrailer() {
+    setTrailer({ status: 'closed', videoKey: null, title: '' })
+  }
 
   const isRecommendMode = recs !== null
 
@@ -157,6 +231,13 @@ function HomePage() {
             cornerIcon="heart"
             cornerActive={isSaved(item.id)}
             onCornerClick={() => handleSaveFavorite(item)}
+            link={item.link} // 외부 상세 페이지 '자세히 보기' 링크
+            // 영화일 때만 예고편 버튼, 음악일 때만 미리듣기 버튼을 넘긴다
+            //   (도서는 둘 다 넘기지 않으므로 버튼이 안 보인다)
+            onPlayTrailer={item.type === 'movie' ? () => handleOpenTrailer(item) : undefined}
+            previewUrl={item.type === 'music' ? item.previewUrl : undefined}
+            onTogglePreview={item.type === 'music' ? () => handleTogglePreview(item) : undefined}
+            isPreviewPlaying={playingId === item.id}
           />
         ))}
       </div>
@@ -253,6 +334,16 @@ function HomePage() {
           </button>
         </aside>
       </section>
+
+      {/* 예고편 모달 — 닫힘 상태가 아닐 때만 화면에 띄운다 */}
+      {trailer.status !== 'closed' && (
+        <TrailerModal
+          status={trailer.status}
+          videoKey={trailer.videoKey}
+          title={trailer.title}
+          onClose={handleCloseTrailer}
+        />
+      )}
     </div>
   )
 }
