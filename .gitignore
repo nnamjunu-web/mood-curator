@@ -15,6 +15,14 @@ dist-ssr
 # 환경변수(API 키)는 깃에 올리지 않는다 — 공유는 .env.example로만
 .env
 
+# 제출본에서 제외하는 학습 문서·발표 대본·작성 규칙 (로컬에는 보존)
+CLAUDE.md
+docs/LEARNING.md
+docs/CONCEPTS.md
+docs/PRESENTATION.md
+docs/DEMO_SCRIPT.md
+docs/DEMO_SCRIPT_2인.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
