@@ -16,7 +16,12 @@
       "Bash(curl -s \"https://openlibrary.org/search.json?subject=Poetry&limit=4&fields=title\")",
       "Bash(curl -s \"https://itunes.apple.com/search?term=%EB%B0%9C%EB%9D%BC%EB%93%9C&entity=song&country=KR&limit=5\")",
       "Bash(curl -s \"https://itunes.apple.com/search?term=%EA%B0%80%EC%9A%94&entity=song&country=KR&limit=4\")",
-      "Bash(curl -s -G \"https://itunes.apple.com/search\" --data-urlencode \"term=감성\" --data-urlencode \"entity=song\" --data-urlencode \"country=KR\" --data-urlencode \"limit=2\")"
+      "Bash(curl -s -G \"https://itunes.apple.com/search\" --data-urlencode \"term=감성\" --data-urlencode \"entity=song\" --data-urlencode \"country=KR\" --data-urlencode \"limit=2\")",
+      "Bash(git rm *)",
+      "Bash(git add *)",
+      "Bash(git commit -m '@ *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
     ]
   }
 }
