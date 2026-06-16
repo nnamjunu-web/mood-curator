@@ -16,7 +16,7 @@ import styles from './AnalyzePage.module.css'
     5) 카메라 권한 거부 시 안내 + '다시 시도' 버튼 표시.
 */
 
-// 카메라 없이 감정을 직접 고르는 빠른 선택 태그 (라벨 + 시스템 코드)
+// 카메라 없이 감정을 직접 고르는 빠른 선택 태그
 const QUICK_MOODS = [
   { label: '평온', code: 'peaceful' },
   { label: '활기찬', code: 'energetic' },
@@ -24,29 +24,18 @@ const QUICK_MOODS = [
   { label: '우울', code: 'sad' },
 ]
 
-/*
-  waitForVideoReady — 비디오가 첫 프레임을 그릴 준비가 될 때까지 기다린다.
-    입력: video(<video> 요소)
-    반환: Promise<void>
-  - 카메라를 막 켜면 영상이 아직 안 들어와 있어, 바로 분석하면 빈 화면이 잡힌다.
-*/
+// 비디오가 첫 프레임을 그릴 준비가 될 때까지 기다린다 (빈 화면 캡처 방지)
 function waitForVideoReady(video) {
   return new Promise((resolve) => {
-    // readyState >= 2면 이미 현재 프레임을 그릴 수 있는 상태
     if (video.readyState >= 2) {
       resolve()
       return
     }
-    // 아니면 데이터가 로드되는 순간(loadeddata)을 한 번 기다린다
     video.onloadeddata = () => resolve()
   })
 }
 
-/*
-  loadImage — 이미지 URL을 <img> 요소로 만들어 로드가 끝나면 돌려준다.
-    입력: src(이미지 주소)
-    반환: Promise<HTMLImageElement>
-*/
+// 이미지 URL을 로드가 끝난 <img> 요소로 만들어 돌려준다
 function loadImage(src) {
   return new Promise((resolve, reject) => {
     const img = new Image()
@@ -57,51 +46,42 @@ function loadImage(src) {
 }
 
 function AnalyzePage() {
-  // useNavigate(): navigate('/경로')로 페이지를 이동시키는 함수
   const navigate = useNavigate()
 
-  // 웹캠 영상을 보여줄 <video>, 끌 때 정리할 스트림, 숨겨진 파일 input을 가리킴
-  const videoRef = useRef(null)
-  const streamRef = useRef(null)
-  const fileInputRef = useRef(null)
-  const startingRef = useRef(false) // 카메라를 켜는 중인지 (중복 요청 방지용 깃발)
+  const videoRef = useRef(null)     // 웹캠 영상 <video>
+  const streamRef = useRef(null)    // 끌 때 정리할 카메라 스트림
+  const fileInputRef = useRef(null) // 숨겨진 파일 input
+  const startingRef = useRef(false) // 카메라를 켜는 중인지 (중복 요청 방지)
 
-  const [modelsReady, setModelsReady] = useState(false) // 모델 로딩 완료 여부
-  const [cameraOn, setCameraOn] = useState(false)       // 카메라 켜짐 여부
-  const [cameraError, setCameraError] = useState(null)  // 카메라 권한/오류 메시지
-  const [analyzing, setAnalyzing] = useState(false)     // 분석 진행 중 여부
-  const [notice, setNotice] = useState(null)            // 얼굴 미인식 등 알림
+  const [modelsReady, setModelsReady] = useState(false)
+  const [cameraOn, setCameraOn] = useState(false)
+  const [cameraError, setCameraError] = useState(null)
+  const [analyzing, setAnalyzing] = useState(false)
+  const [notice, setNotice] = useState(null) // 얼굴 미인식 등 알림
 
-  // 화면이 처음 뜰 때: 모델을 미리 불러오고, 카메라를 자동으로 켜 라이브 미리보기를 시작한다.
-  // (분석은 '분석하기'를 눌러야 일어난다. '다시 분석하기'로 재진입해도 이 effect가 다시 돌아 미리보기가 보인다.)
+  // 진입 시 모델을 로드하고 카메라를 자동으로 켜 미리보기를 시작, 떠날 때 정리
   useEffect(() => {
     loadFaceModels()
       .then(() => setModelsReady(true))
       .catch((error) => console.error(error))
 
-    // 진입 즉시 카메라 켜기 → 미리보기
     startCamera()
 
-    // 페이지를 떠날 때 카메라 정리
     return () => stopCamera()
   }, [])
 
   /*
-    startCamera — 카메라 권한을 요청하고 영상을 <video>에 연결.
-      반환: Promise<boolean> — 성공하면 true, 실패(거부 등)하면 false
+    startCamera — 카메라 권한을 요청하고 영상을 <video>에 연결. 성공 true / 실패 false.
   */
   async function startCamera() {
-    // 이미 켜져 있거나(스트림 보유) 켜는 중이면 다시 요청하지 않는다 — 중복 권한 요청 방지
-    // (특히 개발 모드 StrictMode에서 effect가 두 번 실행돼도 카메라를 한 번만 켜도록)
+    // 이미 켜져 있거나 켜는 중이면 다시 요청하지 않는다 (StrictMode 이중 실행 대비)
     if (streamRef.current || startingRef.current) {
       if (streamRef.current) setCameraOn(true)
       return true
     }
     startingRef.current = true
     try {
-      // navigator.mediaDevices.getUserMedia({ video: true })
-      //   입력: 장치 옵션(비디오만) / 반환: Promise<MediaStream>
-      //   권한을 거부하면 에러를 던진다.
+      // 웹캠 스트림 요청 (권한 거부 시 에러)
       const stream = await navigator.mediaDevices.getUserMedia({ video: true })
       streamRef.current = stream
       if (videoRef.current) videoRef.current.srcObject = stream
@@ -182,8 +162,7 @@ function AnalyzePage() {
     setNotice(null)
     setAnalyzing(true)
 
-    // URL.createObjectURL(파일): 파일을 가리키는 임시 주소를 만든다
-    //   반환: 'blob:...' 형태의 문자열. 다 쓰면 revokeObjectURL로 해제해야 한다.
+    // 파일을 가리키는 임시 URL(다 쓰면 revokeObjectURL로 해제)
     const url = URL.createObjectURL(file)
     try {
       const img = await loadImage(url)

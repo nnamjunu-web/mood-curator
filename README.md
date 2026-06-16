@@ -5,8 +5,6 @@
 
 **주요 기능**: 감정/표정 기반 추천 · 영화 **예고편 미리보기**(YouTube) · 음악 **30초 미리듣기** · 회원가입/로그인(사용자별 보관함).
 
-> 📖 **처음 보는 분은 여기부터:** [docs/LEARNING.md](docs/LEARNING.md) (학습 가이드) · [docs/CONCEPTS.md](docs/CONCEPTS.md) (개념 용어집)
-
 ---
 
 ## 기술 스택
@@ -37,7 +35,3 @@ src/
 ├─ App.jsx       라우팅 + AuthProvider
 └─ main.jsx      진입점
 ```
-자세한 설명과 읽는 순서는 [docs/LEARNING.md](docs/LEARNING.md)를 참고하세요.
-
-## 코드 작성 규칙
-이 프로젝트는 학습용이라 한국어 주석·요약 규칙을 따릅니다 → [CLAUDE.md](CLAUDE.md)

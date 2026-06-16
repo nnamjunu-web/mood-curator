@@ -1,21 +1,10 @@
 /*
-  emotionMapper.js — 감정(영문 코드)을 각 서비스가 이해하는 검색 기준으로 변환
-    - 영화: TMDB 장르 ID(숫자)
-    - 음악: iTunes 한국 스토어 '한글 검색어'(문자열)
-    - 도서: 카카오 책검색 '한글 검색어'(문자열)
-
-  ※ musicTag·bookSubject는 예전엔 영어(Last.fm 태그 / Open Library 주제명)였지만,
-    추천을 한국 음악·한글 도서로 받기 위해 각각 'iTunes 한글 검색어' / '카카오 한글 검색어'로 바꿨다.
-    (필드명은 호출부 변경을 줄이려고 그대로 두되, 값은 한글 키워드다.)
-
-  ※ 아래 EMOTION_MAP은 "기본값"입니다. 매핑을 바꾸려면 이 표만 고치면 됩니다.
-
-  참고 — 자주 쓰는 TMDB 장르 ID:
-    코미디 35 · 드라마 18 · 액션 28 · SF 878 · 스릴러 53 · 공포 27
-    다큐 99 · 로맨스 10749 · 애니메이션 16 · 판타지 14 · 음악 10402
+  emotionMapper.js — 감정 코드를 각 서비스의 검색 기준으로 변환
+    영화: TMDB 장르 ID / 음악: iTunes 한글 검색어 / 도서: 카카오 한글 검색어
+  참고 TMDB 장르 ID: 코미디 35 · 드라마 18 · 액션 28 · SF 878 · 스릴러 53 · 공포 27 · 다큐 99 · 모험 12
 */
 
-// 감정 → { 영화 장르ID, 음악 한글 검색어, 도서 한글 검색어 } 매핑표 (기본값)
+// 감정 → { 영화 장르ID, 음악 검색어, 도서 검색어 } 매핑표
 const EMOTION_MAP = {
   happy:     { movieGenreId: 35,  musicTag: '신나는 가요', bookSubject: '유머' },
   sad:       { movieGenreId: 18,  musicTag: '발라드',     bookSubject: '위로' },
@@ -36,12 +25,7 @@ const EMOTION_MAP = {
 // 매핑표에 없는 감정이 들어왔을 때 쓸 안전한 기본값
 const FALLBACK = { movieGenreId: 18, musicTag: '가요', bookSubject: '소설' }
 
-/*
-  getRecommendationKeys — 감정 하나에 대한 세 서비스의 검색 기준을 한 번에 돌려준다.
-    입력: emotion(영문 감정 코드, 예: 'happy')
-    반환: { movieGenreId, musicTag, bookSubject }
-*/
+// 감정 코드의 검색 기준을 돌려준다 (매핑에 없으면 FALLBACK)
 export function getRecommendationKeys(emotion) {
-  // 매핑표에 있으면 그 값을, 없으면 FALLBACK을 돌려준다
   return EMOTION_MAP[emotion] ?? FALLBACK
 }

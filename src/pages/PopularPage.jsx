@@ -13,9 +13,8 @@ import styles from './PopularPage.module.css'
 
 /*
   PopularPage — '인기 차트' 화면 (경로: /popular)
-  - 실제 인기 데이터를 가져와 영화·음악·도서를 하나의 순위로 섞어 보여준다.
-    · 영화: TMDB 인기작 / 음악: Last.fm 인기 차트 / 도서: Google Books 근사(아래 주석 참고)
-  - 1위(피처드) + 2·3위(작은 카드) + 4위~(리스트) 구조, 카드 버튼으로 보관함 저장.
+  - 영화·음악·도서를 하나의 순위로 섞어 보여준다(1위 + 2·3위 + 4위~ 리스트).
+  - 진짜 '인기' API가 없어 넓은 검색어로 근사한다(진짜 인기 순위 아님).
 */
 
 // 분류 탭 — 라벨과 실제 item.type 값
@@ -34,7 +33,7 @@ const TYPE_GRADIENT = {
   book: 'linear-gradient(160deg, #6b5a3a, #c9a87a)',
 }
 
-// 카테고리별로 차트에 넣을 최대 개수 (음악 표지 조회 수도 이만큼으로 제한)
+// 카테고리별로 차트에 넣을 최대 개수
 const PER_CATEGORY = 12
 
 // 이미지/그라데이션 배경 스타일
@@ -44,12 +43,7 @@ function thumbStyle(item) {
     : { background: TYPE_GRADIENT[item.type] }
 }
 
-/*
-  interleave — 여러 배열을 번갈아(round-robin) 하나로 합친다.
-    입력: lists (배열들의 배열, 예: [영화들, 음악들, 도서들])
-    반환: 영화0, 음악0, 도서0, 영화1, … 순으로 섞인 한 배열
-  - 한 종류가 차트를 독점하지 않고 골고루 섞이도록 하기 위함.
-*/
+// 여러 배열을 번갈아(round-robin) 한 배열로 합친다 (한 종류가 독점하지 않게)
 function interleave(lists) {
   const result = []
   const maxLength = Math.max(0, ...lists.map((list) => list.length))
@@ -73,12 +67,10 @@ function PopularPage() {
   // 즐겨찾기 id 목록 (처음 한 번 localStorage에서 읽음)
   const [favoriteIds, setFavoriteIds] = useState(() => getFavorites().map((f) => f.id))
 
-  // useAuth(): 로그인 상태(user)를 읽는다 (null이면 비로그인)
   const { user } = useAuth()
-  // 비로그인 사용자가 찜하기를 시도했을 때 띄울 안내 표시 여부
-  const [loginNotice, setLoginNotice] = useState(false)
+  const [loginNotice, setLoginNotice] = useState(false) // 비로그인 찜 시도 안내
 
-  // 인기 데이터 불러오기 (mount 시 + 다시 시도 시)
+  // 인기 데이터 불러오기 (mount + 다시 시도)
   useEffect(() => {
     let ignore = false
 
@@ -86,18 +78,16 @@ function PopularPage() {
       setLoading(true)
       setGlobalError(null)
 
-      // 세 곳의 인기 목록을 동시에 요청 (일부 실패해도 멈추지 않음)
-      //  - 음악·도서는 진짜 '인기' API가 없어 넓은 한글 검색어('가요'/'베스트셀러')로 근사한다 (진짜 인기 아님)
+      // 세 곳을 동시에 요청 (음악·도서는 넓은 검색어로 인기 근사)
       const [movieRes, trackRes, bookRes] = await Promise.allSettled([
         fetchPopularMovies(),
-        searchKoreanTracks('가요', PER_CATEGORY), // iTunes 한국 스토어
+        searchKoreanTracks('가요', PER_CATEGORY),
         fetchBooksByQuery('베스트셀러'),
       ])
 
       if (ignore) return
 
-      // 성공한 것만 공통 카드 형태로 변환 + 카테고리별 개수 제한
-      //  - iTunes 음악은 표지·미리듣기가 이미 들어 있어 별도 보강이 필요 없다.
+      // 성공한 것만 공통 카드로 변환 + 개수 제한
       const movies = movieRes.status === 'fulfilled' ? normalizeMovies(movieRes.value).slice(0, PER_CATEGORY) : []
       const music = trackRes.status === 'fulfilled' ? normalizeItunesTracks(trackRes.value).slice(0, PER_CATEGORY) : []
       const books = bookRes.status === 'fulfilled' ? normalizeKakaoBooks(bookRes.value).slice(0, PER_CATEGORY) : []

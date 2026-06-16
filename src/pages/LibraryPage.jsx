@@ -28,13 +28,8 @@ const TYPE_GRADIENT = {
 }
 
 function LibraryPage() {
-  // useNavigate(): navigate('/경로')로 페이지를 이동시키는 함수
   const navigate = useNavigate()
-
-  // 즐겨찾기 목록 — 처음 한 번 localStorage에서 읽어 초기값으로 둔다
   const [favorites, setFavorites] = useState(() => getFavorites())
-
-  // 현재 선택된 분류 필터
   const [filter, setFilter] = useState('all')
 
   // 휴지통 클릭 → 즐겨찾기에서 삭제 후 화면 갱신

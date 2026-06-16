@@ -1,7 +1,5 @@
 /*
-  moodMapper.js — 감정 영문 코드를 한국어 레이블/이모지로 바꾸는 변환 로직
-  - face-api가 돌려주는 7가지 감정(영문)을 화면에 보여줄 한국어로 매핑한다.
-  - 변환 규칙을 이 한 파일에 모아두면, 표현을 바꿀 때 여기만 고치면 된다.
+  moodMapper.js — 감정 코드를 화면 표시용 한국어 레이블/이모지로 변환
 */
 
 // 영문 감정 → 한국어 레이블
@@ -38,20 +36,12 @@ const EMOJI_MAP = {
   reflective: '🤔',
 }
 
-/*
-  getMoodLabel — 감정 코드를 한국어 레이블로 바꾼다.
-    입력: emotion(영문 코드, 예: 'happy')
-    반환: 한국어 문자열(예: '행복'). 없는 코드면 입력값을 그대로 돌려줌
-*/
+// 감정 코드 → 한국어 레이블 (없으면 입력값 그대로)
 export function getMoodLabel(emotion) {
   return LABEL_MAP[emotion] ?? emotion
 }
 
-/*
-  getMoodEmoji — 감정 코드를 이모지로 바꾼다.
-    입력: emotion(영문 코드)
-    반환: 이모지 문자열. 없는 코드면 물음표
-*/
+// 감정 코드 → 이모지 (없으면 물음표)
 export function getMoodEmoji(emotion) {
   return EMOJI_MAP[emotion] ?? '❓'
 }

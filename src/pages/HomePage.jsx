@@ -57,36 +57,27 @@ function HomePage() {
   const [recsMood, setRecsMood] = useState(null)     // 결과의 기준이 된 감정
   const [loadingRecs, setLoadingRecs] = useState(false)
 
-  // useAuth(): 로그인 상태(user)를 AuthContext에서 읽는다 (user가 null이면 비로그인)
   const { user } = useAuth()
+  const [loginNotice, setLoginNotice] = useState(false) // 비로그인 찜 시도 안내
 
-  // 비로그인 사용자가 찜하기를 시도했을 때 띄울 안내 표시 여부
-  const [loginNotice, setLoginNotice] = useState(false)
-
-  // 즐겨찾기 전체 목록 — 하트 토글 시 갱신되어 카드/사이드바에 함께 반영
+  // 즐겨찾기 전체 목록 (하트 토글 시 카드/사이드바에 함께 반영)
   const [favorites, setFavorites] = useState(() => getFavorites())
   const favoriteIds = favorites.map((f) => f.id)
   const savedItems = favorites.slice(0, 3)
 
-  // ── 음악 미리듣기 상태 ──────────────────────────────
-  // audioRef: 화면에 다시 그려도 유지돼야 하는 '오디오 재생기'를 담아둔다(useRef는 값이 바뀌어도 리렌더 안 함)
+  // 음악 미리듣기: 오디오 재생기 하나를 공유(ref) + 재생 중인 카드 id
   const audioRef = useRef(null)
-  // 지금 재생 중인 카드의 id (없으면 null) — 카드 버튼이 ▶/⏸ 중 무엇을 보일지 결정
   const [playingId, setPlayingId] = useState(null)
 
-  // ── 영화 예고편(모달) 상태 ─────────────────────────
-  // status: 'closed' | 'loading' | 'ready' | 'empty'
+  // 영화 예고편 모달 상태 ('closed' | 'loading' | 'ready' | 'empty')
   const [trailer, setTrailer] = useState({ status: 'closed', videoKey: null, title: '' })
 
-  // useEffect: 컴포넌트가 처음 화면에 나타난 직후 오디오 재생기를 한 번 만들어 둔다
+  // 오디오 재생기를 한 번 만들어 두고, 언마운트 시 정리한다
   useEffect(() => {
-    // new Audio(): 입력=없음(또는 URL) / 반환=오디오를 재생/정지할 수 있는 객체
     const audio = new Audio()
     audioRef.current = audio
-    // 곡이 끝까지 재생되면 '재생 중' 표시를 끈다
-    const handleEnded = () => setPlayingId(null)
+    const handleEnded = () => setPlayingId(null) // 곡이 끝나면 재생 표시 끔
     audio.addEventListener('ended', handleEnded)
-    // 정리: 페이지를 떠날 때(언마운트) 재생을 멈추고 리스너를 제거한다
     return () => {
       audio.pause()
       audio.removeEventListener('ended', handleEnded)
